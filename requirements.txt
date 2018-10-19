@@ -1,0 +1,5 @@
+PyVISA-py
+PyVISA
+matplotlib
+scipy
+
