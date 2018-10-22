@@ -20,9 +20,12 @@ def to_int(s):
     return int(float(s.strip()))
 
 
-def main(filename):
+def main(filename, config_filename):
     parser = configparser.ConfigParser()
-    parser.read('e4990.ini')
+    if not os.path.exists(config_filename):
+        print(f"Config file '{config_filename}' not found")
+        return 1
+    parser.read(config_filename)
     sweep_section = parser['sweep']
     start_frequency = to_int(sweep_section.get('start_frequency'))
     stop_frequency = to_int(sweep_section.get('stop_frequency'))
@@ -206,6 +209,9 @@ if __name__ == '__main__':
     default = default_filename()
     parser = argparse.ArgumentParser(description='E4990A acquisition script')
     parser.add_argument('filename', nargs='?')
+    parser.add_argument('--config', default='e4990.ini',
+                        dest='config_filename',
+                        help='INI config file names (default: e4990.ini)')
     args = parser.parse_args()
     if args.filename:
         filename = args.filename
@@ -219,5 +225,4 @@ if __name__ == '__main__':
                      f"to overwrite it (y/n)?")
         if resp.lower() != 'y':
             sys.exit(0)
-    main(filename)
-
+    main(filename, args.config_filename)

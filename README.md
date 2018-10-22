@@ -29,6 +29,15 @@ The [PyVISA](https://pyvisa.readthedocs.io) library is used to communicate with 
     Enter a filepath or press [ENTER] to accept the default (20181020T182322.mat):
     ```
 
+The configuration file can be specified using the `--config` parameter:
+```
+PS> python -m e4990 --config=e4990-2.ini
+```
+View the script documentation:
+ ```
+PS> python -m e4990 -h
+```
+
 ## Tested With
 
 * Windows 10
