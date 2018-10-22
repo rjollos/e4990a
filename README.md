@@ -1,6 +1,6 @@
 # Description
 
-This is a python script for acquiring from the Keysight E4990A impedance analyzer. The script repeatedly captures a frequency sweep from the E4990 at a specified time interval and saves the data in a MAT file. The capture parameters are configured in the `e4990.ini` file.
+This is a python script for acquiring from the Keysight E4990A impedance analyzer. The script repeatedly captures a frequency sweep from the E4990 at a specified time interval and saves the data in a MAT file. The capture parameters are configured in the `e4990a.ini` file.
 
 The [PyVISA](https://pyvisa.readthedocs.io) library is used to communicate with the device over a USB link. The [PyVISA-py](https://pyvisa-py.readthedocs.io/en/latest/) is used as the backend for PyVISA. The device driver is provided by the [Keysight IO Libraries Suite](https://www.keysight.com/en/pd-1985909/io-libraries-suite).
 
@@ -22,20 +22,20 @@ The [PyVISA](https://pyvisa.readthedocs.io) library is used to communicate with 
     ```
     PS> venv\Scripts\activate.ps1
     ```
-1. Set the capture parameters in `e4990.ini`
+1. Set the capture parameters in `e4990a.ini`
 1. Execute the script and accept the default filename for storing the data, or specify the filename. The `.mat` extension will be appended if not provided.
     ```
-    PS> python -m e4990
+    PS> python -m e4990a
     Enter a filepath or press [ENTER] to accept the default (20181020T182322.mat):
     ```
 
 The configuration file can be specified using the `--config` parameter:
 ```
-PS> python -m e4990 --config=e4990-2.ini
+PS> python -m e4990a --config=e4990a-2.ini
 ```
 View the script documentation:
  ```
-PS> python -m e4990 -h
+PS> python -m e4990a -h
 ```
 
 ## Tested With
