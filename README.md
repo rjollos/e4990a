@@ -8,34 +8,35 @@ The [PyVISA](https://pyvisa.readthedocs.io) library is used to communicate with 
 
 1. Install the [Keysight IO Libraries Suite](https://www.keysight.com/en/pd-1985909/io-libraries-suite).
 1. Install [Python](https://www.python.org/downloads/windows/) to `C:\Python37`.
-1. Create a Python environment.
+1. Open Command Prompt and create a Python environment.
     ```
-    PS> C:\Python37\python.exe -m venv venv
-    PS> venv\Scripts\activate.ps1
-    PS> python -m pip install -U pip
-    PS> python -m pip install -r requirements.txt
+    > C:\Python37\python.exe -m venv venv
+    > venv\Scripts\activate.bat
+    > python -m pip install -U pip
+    > python -m pip install -r requirements.txt
     ```
 
 ## Execution
 
-1. Activate the virtual environment
+1. Open Command Prompt and activate the virtual environment.
     ```
-    PS> venv\Scripts\activate.ps1
+    > venv\Scripts\activate.bat
     ```
-1. Set the capture parameters in `e4990a.ini`
+1. Set the capture parameters in `e4990a.ini`.
 1. Execute the script and accept the default filename for storing the data, or specify the filename. The `.mat` extension will be appended if not provided.
     ```
-    PS> python -m e4990a
+    > python -m e4990a
     Enter a filepath or press [ENTER] to accept the default (20181020T182322.mat):
     ```
 
 The configuration file can be specified using the `--config` parameter:
 ```
-PS> python -m e4990a --config=e4990a-2.ini
+> python -m e4990a --config=e4990a-2.ini
 ```
+
 View the script documentation:
- ```
-PS> python -m e4990a -h
+```
+> python -m e4990a -h
 ```
 
 ## Tested With
