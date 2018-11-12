@@ -127,12 +127,13 @@ def main(filename, config_filename):
             pyy = PlotYY(x, ylim1, ylim2)
         pyy.update(yx[:,i], yr[:,i])
 
-        sleep_time = interval_period * (i + 1) - (time.time() - start_time)
-        if sleep_time < 0:
-            print("The interval_period is too short")
-            return 1
-        print(f"Sleeping for {sleep_time:.2f} s")
-        time.sleep(sleep_time)
+        if interval_period != 0:
+            sleep_time = interval_period * (i + 1) - (time.time() - start_time)
+            if sleep_time < 0:
+                print("The interval_period is too short")
+                return 1
+            print(f"Sleeping for {sleep_time:.2f} s")
+            time.sleep(sleep_time)
 
     scio.savemat(filename, {
         'time': datetime.datetime.now().isoformat(),
