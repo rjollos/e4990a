@@ -21,22 +21,6 @@ def to_int(s):
 
 
 def main(filename, config_filename):
-    parser = configparser.ConfigParser()
-    if not os.path.exists(config_filename):
-        print(f"Config file '{config_filename}' not found")
-        return 1
-    parser.read(config_filename)
-    sweep_section = parser['sweep']
-    start_frequency = to_int(sweep_section.get('start_frequency'))
-    stop_frequency = to_int(sweep_section.get('stop_frequency'))
-    number_of_points = to_int(sweep_section.get('number_of_points'))
-    number_of_averages = to_int(sweep_section.get('number_of_averages'))
-    oscillator_voltage = float(sweep_section.get('oscillator_voltage'))
-    bias_voltage = to_int(sweep_section.get('bias_voltage'))
-    number_of_intervals = to_int(sweep_section.get('number_of_intervals'))
-    interval_period = float(sweep_section.get('interval_period'))
-    plotting_enabled = parser.getboolean('plotting', 'enabled', fallback=True)
-
     rm = visa.ResourceManager()
     resources = rm.list_resources('USB?*INSTR')
     if not resources:
@@ -53,6 +37,32 @@ def main(filename, config_filename):
     idn = inst.query(r'*IDN?').strip()
     print(idn)
 
+    parser = configparser.ConfigParser()
+    if not os.path.exists(config_filename):
+        print(f"Config file '{config_filename}' not found")
+        return 1
+    parser.read(config_filename)
+    sweep_section = parser['sweep']
+    start_frequency = int(sweep_section.getfloat('start_frequency'))
+    stop_frequency = int(sweep_section.getfloat('stop_frequency'))
+    number_of_points = sweep_section.getint('number_of_points')
+    number_of_averages = sweep_section.getint('number_of_averages')
+    oscillator_voltage = sweep_section.getfloat('oscillator_voltage')
+    bias_voltage = sweep_section.getint('bias_voltage')
+    number_of_intervals = sweep_section.getint('number_of_intervals')
+    interval_period = sweep_section.getfloat('interval_period')
+    plotting_enabled = parser.getboolean('plotting', 'enabled', fallback=True)
+
+    print("Acquisition parameters:")
+    print(f"\tStart frequency: {start_frequency / 1e3:.3e} kHz")
+    print(f"\tStop frequency: {stop_frequency / 1e3:.3e} kHz")
+    print(f"\tNumber of points: {number_of_points}")
+    print(f"\tNumber of averages: {number_of_averages}")
+    print(f"\tOscillator voltage: {oscillator_voltage} Volts")
+    print(f"\tBias voltage: {bias_voltage} Volts")
+    print(f"\tNumber of intervals: {number_of_intervals}")
+    print(f"\tInterval period: {interval_period} seconds")
+
     #inst.write('*RST')
     inst.write('*CLS')
     #inst.write(':SENS1:CORR1:STAT ON')
@@ -62,14 +72,15 @@ def main(filename, config_filename):
     def print_status(st):
         return "ON" if st else "OFF" 
 
+    print("Calibration status:")
     user_cal_status = to_int(inst.query(':SENS1:CORR1:STAT?'))
-    print(f"User calibration status: {print_status(user_cal_status)}")
+    print(f"\tUser calibration: {print_status(user_cal_status)}")
     open_cmp_status = to_int(inst.query(':SENS1:CORR2:OPEN?'))
-    print(f"Open fixture compensation status: {print_status(open_cmp_status)}")
+    print(f"\tOpen fixture compensation: {print_status(open_cmp_status)}")
     short_cmp_status = to_int(inst.query(':SENS1:CORR2:SHOR?'))
-    print(f"Short fixture compensation status: {print_status(short_cmp_status)}")
+    print(f"\tShort fixture compensation: {print_status(short_cmp_status)}")
     load_cmp_status = to_int(inst.query(':SENS1:CORR2:LOAD?'))
-    print(f"Load fixture compensation status: {print_status(load_cmp_status)}")
+    print(f"\tLoad fixture compensation: {print_status(load_cmp_status)}")
     
     inst.write(':CALC1:PAR1:DEF R')
     inst.write(':CALC1:PAR2:DEF X')
