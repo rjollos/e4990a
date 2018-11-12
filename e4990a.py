@@ -98,16 +98,16 @@ def main(filename, config_filename):
     start_time = time.time()
     for i in range(0, number_of_intervals):
         inst.write('*CLS')
-        inst.write(':DISP:WIND1:TRAC1:STAT OFF')
-        inst.write(':DISP:WIND1:TRAC2:STAT OFF')
+#        inst.write(':DISP:WIND1:TRAC1:STAT OFF')
+#        inst.write(':DISP:WIND1:TRAC2:STAT OFF')
         acq_start_time = time.time()
         inst.write(':TRIG:SING')
         inst.query('*OPC?')
         acq_end_time = time.time() - acq_start_time
         print(f"Acquisition time is {acq_end_time:.2f} s")
 
-        inst.write(':DISP:WIND1:TRAC1:STAT ON')
-        inst.write(':DISP:WIND1:TRAC2:STAT ON')
+#        inst.write(':DISP:WIND1:TRAC1:STAT ON')
+#        inst.write(':DISP:WIND1:TRAC2:STAT ON')
         inst.write(':DISP:WIND1:TRAC1:Y:AUTO')
         inst.write(':DISP:WIND1:TRAC2:Y:AUTO')
 
