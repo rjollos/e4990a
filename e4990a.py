@@ -207,14 +207,15 @@ class PlotYY:
 
 if __name__ == '__main__':
     default = default_filename()
-    parser = argparse.ArgumentParser(description='E4990A acquisition script')
+    parser = argparse.ArgumentParser(
+        description="Keysight E4990A acquisition script")
     parser.add_argument('filename', nargs='?')
     parser.add_argument('--config', default='e4990a.ini',
                         dest='config_filename',
-                        help='INI config file names (default: e4990.ini)')
+                        help="INI config filename (default: e4990.ini)")
     parser.add_argument('-d', '--default-filename', action='store_true',
                         dest='use_default_filename',
-                        help='Use default filename for saving data')
+                        help="Use default filename for saving data")
     args = parser.parse_args()
     if args.filename:
         filename = args.filename
