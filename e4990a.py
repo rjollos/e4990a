@@ -88,10 +88,13 @@ def main(filename, config_filename):
     inst.write(':INIT1:CONT ON')
     inst.write(':TRIG:SOUR BUS')
 
-    pyy = None
     ydims = number_of_points, number_of_intervals
     yx = numpy.zeros(ydims, dtype=numpy.float32)
     yr = numpy.zeros(ydims, dtype=numpy.float32)
+    query = functools.partial(inst.query_ascii_values, separator=',',
+                              container=numpy.ndarray)
+    x = query(':SENS1:FREQ:DATA?')
+    pyy = PlotYY(x)
     start_time = time.time()
     for i in range(0, number_of_intervals):
         inst.write('*CLS')
@@ -113,19 +116,12 @@ def main(filename, config_filename):
         ndiv = to_int(inst.query(':DISP:WIND1:Y:DIV?'))
         pdiv1 = to_int(inst.query(':DISP:WIND1:TRAC1:Y:PDIV?'))
         pdiv2 = to_int(inst.query(':DISP:WIND1:TRAC2:Y:PDIV?'))
-        ylim1 = rlev1 - ndiv / 2 * pdiv1, rlev1 + ndiv / 2 * pdiv1
-        ylim2 = rlev2 - ndiv / 2 * pdiv2, rlev2 + ndiv / 2 * pdiv2
-
-        query = functools.partial(inst.query_ascii_values, separator=',', 
-                                container=numpy.ndarray)
-
-        x = query(':SENS1:FREQ:DATA?')
+        yxlim = rlev1 - ndiv / 2 * pdiv1, rlev1 + ndiv / 2 * pdiv1
+        yrlim = rlev2 - ndiv / 2 * pdiv2, rlev2 + ndiv / 2 * pdiv2
         y = query(':CALC1:DATA:RDAT?')
         yx[:,i] = y[::2]
         yr[:,i] = y[1::2]
-        if not pyy:
-            pyy = PlotYY(x, ylim1, ylim2)
-        pyy.update(yx[:,i], yr[:,i])
+        pyy.update(yx[:,i], yr[:,i], yxlim, yrlim)
 
         if interval_period != 0:
             sleep_time = interval_period * (i + 1) - (time.time() - start_time)
@@ -170,14 +166,13 @@ def default_filename():
 
 class PlotYY:
 
-    def __init__(self, t, y1lim, y2lim):
+    def __init__(self, t):
         self._t = t / 1e3  # Hz -> kHz
         self._fig, self._ax1 = pyplot.subplots()
         self._color1 = 'tab:orange'
         self._ax1.set_xlabel('Frequency [kHz]')
         self._ax1.set_ylabel('R', color=self._color1)
         self._ax1.set_xlim(self._t[0], self._t[-1])
-        self._ax1.set_ylim(y1lim)
         self._ax1.tick_params(axis='y', labelcolor=self._color1)
 
         self._ax2 = self._ax1.twinx()  # instantiate a second axes that shares the same x-axis
@@ -185,7 +180,6 @@ class PlotYY:
         self._color2 = 'tab:blue'
         self._ax2.set_ylabel('X', color=self._color2)
         self._ax2.set_xlim(self._t[0], self._t[-1])
-        self._ax2.set_ylim(y2lim)
         self._ax2.tick_params(axis='y', labelcolor=self._color2)
         self._lines1 = self._lines2 = None
 
@@ -193,7 +187,7 @@ class PlotYY:
         pyplot.ion()
         pyplot.show()
 
-    def update(self, y1, y2):
+    def update(self, y1, y2, y1lim=None, y2lim=None):
         if not self._lines1:
             self._lines1 = self._ax1.plot(self._t, y1, color=self._color1)
         else:
@@ -202,6 +196,10 @@ class PlotYY:
             self._lines2 = self._ax2.plot(self._t, y2, color=self._color2)
         else:
             self._lines2[0].set_ydata(y2)
+        if y1lim:
+            self._ax1.set_ylim(y1lim)
+        if y2lim:
+            self._ax2.set_ylim(y2lim)
         pyplot.draw()
         pyplot.pause(0.001)
 
