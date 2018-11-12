@@ -35,6 +35,7 @@ def main(filename, config_filename):
     bias_voltage = to_int(sweep_section.get('bias_voltage'))
     number_of_intervals = to_int(sweep_section.get('number_of_intervals'))
     interval_period = float(sweep_section.get('interval_period'))
+    plotting_enabled = parser.getboolean('plotting', 'enabled', fallback=True)
 
     rm = visa.ResourceManager()
     resources = rm.list_resources('USB?*INSTR')
@@ -91,10 +92,11 @@ def main(filename, config_filename):
     ydims = number_of_points, number_of_intervals
     yx = numpy.zeros(ydims, dtype=numpy.float32)
     yr = numpy.zeros(ydims, dtype=numpy.float32)
-    query = functools.partial(inst.query_ascii_values, separator=',',
-                              container=numpy.ndarray)
-    x = query(':SENS1:FREQ:DATA?')
-    pyy = PlotYY(x)
+    if plotting_enabled:
+        query = functools.partial(inst.query_ascii_values, separator=',',
+                                container=numpy.ndarray)
+        x = query(':SENS1:FREQ:DATA?')
+        pyy = PlotYY(x)
     start_time = time.time()
     for i in range(0, number_of_intervals):
         inst.write('*CLS')
@@ -111,17 +113,18 @@ def main(filename, config_filename):
         inst.write(':DISP:WIND1:TRAC1:Y:AUTO')
         inst.write(':DISP:WIND1:TRAC2:Y:AUTO')
 
-        rlev1 = to_int(inst.query(':DISP:WIND1:TRAC1:Y:RLEV?'))
-        rlev2 = to_int(inst.query(':DISP:WIND1:TRAC2:Y:RLEV?'))
-        ndiv = to_int(inst.query(':DISP:WIND1:Y:DIV?'))
-        pdiv1 = to_int(inst.query(':DISP:WIND1:TRAC1:Y:PDIV?'))
-        pdiv2 = to_int(inst.query(':DISP:WIND1:TRAC2:Y:PDIV?'))
-        yxlim = rlev1 - ndiv / 2 * pdiv1, rlev1 + ndiv / 2 * pdiv1
-        yrlim = rlev2 - ndiv / 2 * pdiv2, rlev2 + ndiv / 2 * pdiv2
-        y = query(':CALC1:DATA:RDAT?')
-        yx[:,i] = y[::2]
-        yr[:,i] = y[1::2]
-        pyy.update(yx[:,i], yr[:,i], yxlim, yrlim)
+        if plotting_enabled:
+            rlev1 = to_int(inst.query(':DISP:WIND1:TRAC1:Y:RLEV?'))
+            rlev2 = to_int(inst.query(':DISP:WIND1:TRAC2:Y:RLEV?'))
+            ndiv = to_int(inst.query(':DISP:WIND1:Y:DIV?'))
+            pdiv1 = to_int(inst.query(':DISP:WIND1:TRAC1:Y:PDIV?'))
+            pdiv2 = to_int(inst.query(':DISP:WIND1:TRAC2:Y:PDIV?'))
+            yxlim = rlev1 - ndiv / 2 * pdiv1, rlev1 + ndiv / 2 * pdiv1
+            yrlim = rlev2 - ndiv / 2 * pdiv2, rlev2 + ndiv / 2 * pdiv2
+            y = query(':CALC1:DATA:RDAT?')
+            yx[:,i] = y[::2]
+            yr[:,i] = y[1::2]
+            pyy.update(yx[:,i], yr[:,i], yxlim, yrlim)
 
         if interval_period != 0:
             sleep_time = interval_period * (i + 1) - (time.time() - start_time)
