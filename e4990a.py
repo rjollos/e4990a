@@ -39,6 +39,18 @@ def main(filename, config_filename):
         print(f"\n{e}")
         return 1
     inst.timeout = 15000
+    try:
+        acquire(inst, config_filename)
+    finally:
+        inst.write(':SOUR:BIAS:STAT OFF')
+        inst.close()
+        rm.close()
+
+    input("Press [ENTER] to exit\n")
+    return 0
+
+
+def acquire(inst, config_filename):
     idn = inst.query(r'*IDN?').strip()
     print(idn)
 
@@ -181,13 +193,6 @@ def main(filename, config_filename):
         'R': yx,
     })
     print(f"Data saved to {filename}")
-
-    inst.write(':SOUR:BIAS:STAT OFF')
-    inst.close()
-    rm.close()
-
-    input("Press [ENTER] to exit\n")
-    return 0
 
 
 def default_filename():
