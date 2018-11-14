@@ -10,6 +10,7 @@ import time
 
 import matplotlib.pyplot as pyplot
 import numpy
+import pyvisa
 import scipy.io as scio
 import visa
 
@@ -32,7 +33,11 @@ def main(filename, config_filename):
             print('\t' + r)
         return 1
 
-    inst = rm.open_resource(resources[0])
+    try:
+        inst = rm.open_resource(resources[0])
+    except pyvisa.errors.VisaIOError as e:
+        print(f"\n{e}")
+        return 1
     inst.timeout = 15000
     idn = inst.query(r'*IDN?').strip()
     print(idn)
