@@ -107,6 +107,7 @@ def acquire(inst, config_filename):
     
     inst.write(':CALC1:PAR1:DEF R')
     inst.write(':CALC1:PAR2:DEF X')
+    inst.write(':SENS1:SWE:TYPE LIN')
     inst.write(f':SENS1:SWE:POIN {number_of_points}')
     inst.write(f':SENS1:FREQ:START {start_frequency}')
     inst.write(f':SENS1:FREQ:STOP {stop_frequency}')
