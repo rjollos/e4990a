@@ -6,6 +6,7 @@ import collections
 import configparser
 import datetime
 import functools
+import numbers
 import os
 import subprocess
 import sys
@@ -23,11 +24,26 @@ time_now = None
 
 
 def to_int(s):
-    return int(float(s.strip()))
+    if s is None:
+        return s
+    elif isinstance(s, numbers.Number):
+        return int(float(s))
+    elif ',' in s:  # comma-separated values
+        return [int(float(f)) for f in s.strip().split(',')]
+    else:
+        return int(float(s.strip()))
 
 
 def main(filename, config_filename):
     cfg = read_config(config_filename)
+    if cfg.segments and any((cfg.start_frequency,
+                             cfg.stop_frequency,
+                             cfg.number_of_points)):
+        print("Configuration contains segmented and "
+              "non-segmented acquistion parameters.\n"
+              "Define either segments or start_frequency/"
+              "stop_frequency/number_of_points.")
+        return 1
     rm = visa.ResourceManager()
     print(rm.visalib)
     resources = rm.list_resources('USB?*INSTR')
@@ -65,6 +81,7 @@ def read_config(config_filename):
         'start_frequency',
         'stop_frequency',
         'number_of_points',
+        'segments',
         'measurement_speed',
         'number_of_sweep_averages',
         'number_of_point_averages',
@@ -78,9 +95,10 @@ def read_config(config_filename):
     parser.read(config_filename)
     sweep_section = parser['sweep']
     return Config(
-        int(sweep_section.getfloat('start_frequency')),
-        int(sweep_section.getfloat('stop_frequency')),
+        to_int(sweep_section.getfloat('start_frequency')),
+        to_int(sweep_section.getfloat('stop_frequency')),
         sweep_section.getint('number_of_points'),
+        sweep_section.get('segments'),
         sweep_section.getint('measurement_speed', fallback=1),
         sweep_section.getint('number_of_sweep_averages', fallback=1),
         sweep_section.getint('number_of_point_averages', fallback=1),
@@ -98,9 +116,14 @@ def acquire(inst, filename, cfg):
     print(idn)
 
     print("Acquisition parameters:")
-    print(f"\tStart frequency: {cfg.start_frequency / 1e3:.3e} kHz")
-    print(f"\tStop frequency: {cfg.stop_frequency / 1e3:.3e} kHz")
-    print(f"\tNumber of points: {cfg.number_of_points}")
+    if cfg.start_frequency is not None:
+        print(f"\tStart frequency: {cfg.start_frequency / 1e3:.3e} kHz")
+    if cfg.stop_frequency is not None:
+        print(f"\tStop frequency: {cfg.stop_frequency / 1e3:.3e} kHz")
+    if cfg.number_of_points is not None:
+        print(f"\tNumber of points: {cfg.number_of_points}")
+    if cfg.segments is not None:
+        print(f"\tSegments: {cfg.segments}")
     print(f"\tMeasurement speed: {cfg.measurement_speed}")
     print(f"\tNumber of sweep averages: {cfg.number_of_sweep_averages}")
     print(f"\tNumber of point averages: {cfg.number_of_point_averages}")
@@ -131,9 +154,21 @@ def acquire(inst, filename, cfg):
     inst.write(':CALC1:PAR1:DEF R')
     inst.write(':CALC1:PAR2:DEF X')
     inst.write(':SENS1:SWE:TYPE LIN')
-    inst.write(f':SENS1:SWE:POIN {cfg.number_of_points}')
-    inst.write(f':SENS1:FREQ:START {cfg.start_frequency}')
-    inst.write(f':SENS1:FREQ:STOP {cfg.stop_frequency}')
+    if cfg.segments is not None:
+        inst.write(':SENS1:SWE:TYPE SEGM')
+        segments = numpy.array(to_int(cfg.segments))
+        number_of_segments = segments.size // 3
+        segments.shape = number_of_segments, 3
+        inst.write(f':SENS1:SEGM:DATA 7,0,0,0,0,0,0,0,'
+                    '{number_of_segments},{cfg.segments}')
+        number_of_points = sum(segments[:,2])
+        assert(number_of_points == to_int(inst.query(':SENS1:SEGM:SWE:POIN?')))
+    else:
+        inst.write(f':SENS1:FREQ:START {cfg.start_frequency}')
+        inst.write(f':SENS1:FREQ:STOP {cfg.stop_frequency}')
+        inst.write(f':SENS1:SWE:POIN {cfg.number_of_points}')
+        number_of_points = cfg.number_of_points
+
     inst.write(f':SENS1:AVER:COUN {cfg.number_of_point_averages}')
     inst.write(f':SENS1:AVER:STAT ON')
     # Measurement speed: [1 5] (1: fastest, 5: most accurate)
@@ -155,7 +190,7 @@ def acquire(inst, filename, cfg):
     inst.write(':INIT1:CONT ON')
     inst.write(':TRIG:SOUR BUS')
 
-    ydims = cfg.number_of_points, cfg.number_of_intervals
+    ydims = number_of_points, cfg.number_of_intervals
     yx = numpy.zeros(ydims, dtype=numpy.float32)
     yr = numpy.zeros(ydims, dtype=numpy.float32)
     query = functools.partial(inst.query_ascii_values, separator=',',
@@ -202,6 +237,7 @@ def acquire(inst, filename, cfg):
             print(f"Sleeping for {sleep_time:.2f} s")
             time.sleep(sleep_time)
 
+    x.shape = x.shape[0], 1  # Force shape to be N x 1
     scio.savemat(filename, {
         'time': time_now,
         'idn': idn,
@@ -215,7 +251,7 @@ def acquire(inst, filename, cfg):
         'openCmpStatus': open_cmp_status,
         'shortCmpStatus': short_cmp_status,
         'loadCmpStatus': load_cmp_status,
-        'Frequency': (cfg.start_frequency, cfg.stop_frequency),
+        'Frequency': x,
         'X': yr,
         'R': yx,
     })
