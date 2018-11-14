@@ -51,7 +51,11 @@ def main(filename, config_filename):
     start_frequency = int(sweep_section.getfloat('start_frequency'))
     stop_frequency = int(sweep_section.getfloat('stop_frequency'))
     number_of_points = sweep_section.getint('number_of_points')
-    number_of_averages = sweep_section.getint('number_of_averages')
+    measurement_speed = sweep_section.getint('measurement_speed', fallback=1)
+    number_of_sweep_averages = \
+        sweep_section.getint('number_of_sweep_averages', fallback=1)
+    number_of_point_averages = \
+        sweep_section.getint('number_of_point_averages', fallback=1)
     oscillator_voltage = sweep_section.getfloat('oscillator_voltage')
     bias_voltage = sweep_section.getint('bias_voltage')
     number_of_intervals = sweep_section.getint('number_of_intervals')
@@ -62,7 +66,9 @@ def main(filename, config_filename):
     print(f"\tStart frequency: {start_frequency / 1e3:.3e} kHz")
     print(f"\tStop frequency: {stop_frequency / 1e3:.3e} kHz")
     print(f"\tNumber of points: {number_of_points}")
-    print(f"\tNumber of averages: {number_of_averages}")
+    print(f"\tMeasurement speed: {measurement_speed}")
+    print(f"\tNumber of sweep averages: {number_of_sweep_averages}")
+    print(f"\tNumber of point averages: {number_of_point_averages}")
     print(f"\tOscillator voltage: {oscillator_voltage} Volts")
     print(f"\tBias voltage: {bias_voltage} Volts")
     print(f"\tNumber of intervals: {number_of_intervals}")
@@ -92,11 +98,15 @@ def main(filename, config_filename):
     inst.write(f':SENS1:SWE:POIN {number_of_points}')
     inst.write(f':SENS1:FREQ:START {start_frequency}')
     inst.write(f':SENS1:FREQ:STOP {stop_frequency}')
+    inst.write(f':SENS1:AVER:COUN {number_of_point_averages}')
+    inst.write(f':SENS1:AVER:STAT ON')
+    # Measurement speed: [1 5] (1: fastest, 5: most accurate)
+    inst.write(f':SENS1:APER:TIME {measurement_speed}')
 
-    if number_of_averages > 1:
+    if number_of_sweep_averages > 1:
         inst.write(':TRIG:SEQ:AVER ON')
         inst.write(':CALC1:AVER ON')
-        inst.write(f':CALC1:AVER:COUN {number_of_averages}')
+        inst.write(f':CALC1:AVER:COUN {number_of_sweep_averages}')
     else:
         inst.write(':CALC1:AVER OFF')
 
@@ -159,7 +169,9 @@ def main(filename, config_filename):
         'idn': idn,
         'biasVoltage': bias_voltage,
         'oscillatorVoltage': oscillator_voltage,
-        'numberOfAverages': number_of_averages,
+        'measurementSpeed': measurement_speed,
+        'numberOfSweepAverages': number_of_sweep_averages,
+        'numberOfPointAverages': number_of_point_averages,
         'userCalStatus': user_cal_status,
         'openCmpStatus': open_cmp_status,
         'shortCmpStatus': short_cmp_status,
