@@ -93,8 +93,12 @@ def main(filename, config_filename):
     inst.write(f':SENS1:FREQ:START {start_frequency}')
     inst.write(f':SENS1:FREQ:STOP {stop_frequency}')
 
-    inst.write(':CALC1:AVER ON')
-    inst.write(f':CALC1:AVER:COUN {number_of_averages}')
+    if number_of_averages > 1:
+        inst.write(':TRIG:SEQ:AVER ON')
+        inst.write(':CALC1:AVER ON')
+        inst.write(f':CALC1:AVER:COUN {number_of_averages}')
+    else:
+        inst.write(':CALC1:AVER OFF')
 
     inst.write(':SOUR1:MODE VOLT')
     inst.write(f':SOUR1:VOLT {oscillator_voltage}')
