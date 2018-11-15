@@ -5,6 +5,7 @@ import configparser
 import datetime
 import functools
 import os
+import subprocess
 import sys
 import time
 
@@ -15,6 +16,7 @@ import scipy.io as scio
 import visa
 
 fileext = '.mat'
+program_version = None
 
 
 def to_int(s):
@@ -51,6 +53,7 @@ def main(filename, config_filename):
 
 
 def acquire(inst, config_filename):
+    print(f"Acquisition program version: {program_version}")
     idn = inst.query(r'*IDN?').strip()
     print(idn)
 
@@ -180,6 +183,7 @@ def acquire(inst, config_filename):
     scio.savemat(filename, {
         'time': datetime.datetime.now().isoformat(),
         'idn': idn,
+        'acqProgramVersion': program_version,
         'biasVoltage': bias_voltage,
         'oscillatorVoltage': oscillator_voltage,
         'measurementSpeed': measurement_speed,
@@ -246,6 +250,9 @@ class PlotYY:
 
 
 if __name__ == '__main__':
+    r = subprocess.run('git describe --tags --always',
+                       stdout=subprocess.PIPE)
+    program_version = r.stdout.strip().decode()
     default = default_filename()
     parser = argparse.ArgumentParser(
         description="Keysight E4990A acquisition script")
