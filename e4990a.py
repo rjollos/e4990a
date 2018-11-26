@@ -17,6 +17,7 @@ import visa
 
 fileext = '.mat'
 program_version = None
+time_now = None
 
 
 def to_int(s):
@@ -50,7 +51,7 @@ def main(filename, config_filename):
 
     input("Press [ENTER] to exit\n")
     return 0
-
+    
 
 def acquire(inst, config_filename):
     print(f"Acquisition program version: {program_version}")
@@ -181,7 +182,7 @@ def acquire(inst, config_filename):
             time.sleep(sleep_time)
 
     scio.savemat(filename, {
-        'time': datetime.datetime.now().isoformat(),
+        'time': time_now,
         'idn': idn,
         'acqProgramVersion': program_version,
         'biasVoltage': bias_voltage,
@@ -200,12 +201,13 @@ def acquire(inst, config_filename):
     print(f"Data saved to {filename}")
 
 
-def default_filename():
+def default_filename(now=None):
     """Create ISO8601 timestamp as default filename
 
     The format is: YYYYMMDDTHHMMSS
     """
-    now = datetime.datetime.now().isoformat()
+    if now is None:
+        now = datetime.datetime.now().isoformat()
     return now.replace('-', '').replace(':', '').split('.')[0]
 
 
@@ -253,7 +255,8 @@ if __name__ == '__main__':
     r = subprocess.run('git describe --tags --always',
                        stdout=subprocess.PIPE)
     program_version = r.stdout.strip().decode()
-    default = default_filename()
+    time_now = datetime.datetime.now().isoformat()
+    default = default_filename(time_now)
     parser = argparse.ArgumentParser(
         description="Keysight E4990A acquisition script")
     parser.add_argument('filename', nargs='?')
