@@ -25,7 +25,7 @@ def to_int(s):
 
 
 def main(filename, config_filename):
-    rm = visa.ResourceManager()
+    rm = visa.ResourceManager('@py')
     resources = rm.list_resources('USB?*INSTR')
     if not resources:
         print("No USB instruments found")
