@@ -47,7 +47,6 @@ View the script documentation:
 
 ## TODO
 
-1. Pass the INI filename as a script option.
 1. Can the script be run from Linux and/or OSX? The Keysight IO libraries are Windows-only and a device driver seems to be needed to communicate with the instrument over the USB interface. The device driver might not be needed if the E4990A ethernet interface is used.
 
 ## References
