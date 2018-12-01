@@ -51,7 +51,7 @@ def main(filename, config_filename):
 
     input("Press [ENTER] to exit\n")
     return 0
-    
+
 
 def acquire(inst, config_filename):
     print(f"Acquisition program version: {program_version}")
@@ -97,7 +97,7 @@ def acquire(inst, config_filename):
     #inst.write(':SENS1:CORR2:SHOR ON')
     #inst.write(':SENS1:CORR2:LOAD ON')
     def print_status(st):
-        return "ON" if st else "OFF" 
+        return "ON" if st else "OFF"
 
     print("Calibration status:")
     user_cal_status = to_int(inst.query(':SENS1:CORR1:STAT?'))
@@ -108,7 +108,7 @@ def acquire(inst, config_filename):
     print(f"\tShort fixture compensation: {print_status(short_cmp_status)}")
     load_cmp_status = to_int(inst.query(':SENS1:CORR2:LOAD?'))
     print(f"\tLoad fixture compensation: {print_status(load_cmp_status)}")
-    
+
     inst.write(':CALC1:PAR1:DEF R')
     inst.write(':CALC1:PAR2:DEF X')
     inst.write(':SENS1:SWE:TYPE LIN')
@@ -223,7 +223,7 @@ class PlotYY:
         self._ax1.tick_params(axis='y', labelcolor=self._color1)
 
         self._ax2 = self._ax1.twinx()  # instantiate a second axes that shares the same x-axis
-        
+
         self._color2 = 'tab:blue'
         self._ax2.set_ylabel('X', color=self._color2)
         self._ax2.set_xlim(self._t[0], self._t[-1])
