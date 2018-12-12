@@ -2,7 +2,7 @@
 
 This is a python script for acquiring from the Keysight E4990A impedance analyzer. The script repeatedly captures a frequency sweep from the E4990 at a specified time interval and saves the data in a MAT file. The capture parameters are configured in the `e4990a.ini` file.
 
-The [PyVISA](https://pyvisa.readthedocs.io) library is used to communicate with the device over a USB link. The [PyVISA-py](https://pyvisa-py.readthedocs.io/en/latest/) is used as the backend for PyVISA. The device driver is provided by the [Keysight IO Libraries Suite](https://www.keysight.com/en/pd-1985909/io-libraries-suite).
+The [PyVISA](https://pyvisa.readthedocs.io) library is used to communicate with the device over a USB link. The device driver and visa backend are provided by the [Keysight IO Libraries Suite](https://www.keysight.com/en/pd-1985909/io-libraries-suite).
 
 ## Installation
 
