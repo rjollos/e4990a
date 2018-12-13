@@ -276,7 +276,7 @@ class PlotYY:
 
 if __name__ == '__main__':
     r = subprocess.run('git describe --tags --always',
-                       stdout=subprocess.PIPE)
+                       stdout=subprocess.PIPE, shell=True)
     program_version = r.stdout.strip().decode()
     time_now = datetime.datetime.now().isoformat()
     default = default_filename(time_now)
