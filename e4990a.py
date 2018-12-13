@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import collections
 import configparser
 import datetime
 import functools
@@ -25,6 +26,7 @@ def to_int(s):
 
 
 def main(filename, config_filename):
+    cfg = read_config(config_filename)
     rm = visa.ResourceManager()
     print(rm.visalib)
     resources = rm.list_resources('USB?*INSTR')
@@ -44,7 +46,7 @@ def main(filename, config_filename):
         return 1
     inst.timeout = 15000
     try:
-        rc = acquire(inst, config_filename)
+        rc = acquire(inst, cfg)
     finally:
         inst.write(':SOUR:BIAS:STAT OFF')
         inst.close()
@@ -55,42 +57,59 @@ def main(filename, config_filename):
     return rc
 
 
-def acquire(inst, config_filename):
-    print(f"Acquisition program version: {program_version}")
-    idn = inst.query(r'*IDN?').strip()
-    print(idn)
-
+def read_config(config_filename):
     parser = configparser.ConfigParser()
     if not os.path.exists(config_filename):
         print(f"Config file '{config_filename}' not found")
         return 1
+
+    Config = collections.namedtuple('Configuration', [
+        'start_frequency',
+        'stop_frequency',
+        'number_of_points',
+        'measurement_speed',
+        'number_of_sweep_averages',
+        'number_of_point_averages',
+        'oscillator_voltage',
+        'bias_voltage',
+        'number_of_intervals',
+        'interval_period',
+        'plotting_enabled'
+    ])
+
     parser.read(config_filename)
     sweep_section = parser['sweep']
-    start_frequency = int(sweep_section.getfloat('start_frequency'))
-    stop_frequency = int(sweep_section.getfloat('stop_frequency'))
-    number_of_points = sweep_section.getint('number_of_points')
-    measurement_speed = sweep_section.getint('measurement_speed', fallback=1)
-    number_of_sweep_averages = \
-        sweep_section.getint('number_of_sweep_averages', fallback=1)
-    number_of_point_averages = \
-        sweep_section.getint('number_of_point_averages', fallback=1)
-    oscillator_voltage = sweep_section.getfloat('oscillator_voltage')
-    bias_voltage = sweep_section.getint('bias_voltage')
-    number_of_intervals = sweep_section.getint('number_of_intervals')
-    interval_period = sweep_section.getfloat('interval_period')
-    plotting_enabled = parser.getboolean('plotting', 'enabled', fallback=True)
+    return Config(
+        int(sweep_section.getfloat('start_frequency')),
+        int(sweep_section.getfloat('stop_frequency')),
+        sweep_section.getint('number_of_points'),
+        sweep_section.getint('measurement_speed', fallback=1),
+        sweep_section.getint('number_of_sweep_averages', fallback=1),
+        sweep_section.getint('number_of_point_averages', fallback=1),
+        sweep_section.getfloat('oscillator_voltage'),
+        sweep_section.getint('bias_voltage'),
+        sweep_section.getint('number_of_intervals'),
+        sweep_section.getfloat('interval_period'),
+        parser.getboolean('plotting', 'enabled', fallback=True)
+    )
+
+
+def acquire(inst, cfg):
+    print(f"Acquisition program version: {program_version}")
+    idn = inst.query(r'*IDN?').strip()
+    print(idn)
 
     print("Acquisition parameters:")
-    print(f"\tStart frequency: {start_frequency / 1e3:.3e} kHz")
-    print(f"\tStop frequency: {stop_frequency / 1e3:.3e} kHz")
-    print(f"\tNumber of points: {number_of_points}")
-    print(f"\tMeasurement speed: {measurement_speed}")
-    print(f"\tNumber of sweep averages: {number_of_sweep_averages}")
-    print(f"\tNumber of point averages: {number_of_point_averages}")
-    print(f"\tOscillator voltage: {oscillator_voltage} Volts")
-    print(f"\tBias voltage: {bias_voltage} Volts")
-    print(f"\tNumber of intervals: {number_of_intervals}")
-    print(f"\tInterval period: {interval_period} seconds")
+    print(f"\tStart frequency: {cfg.start_frequency / 1e3:.3e} kHz")
+    print(f"\tStop frequency: {cfg.stop_frequency / 1e3:.3e} kHz")
+    print(f"\tNumber of points: {cfg.number_of_points}")
+    print(f"\tMeasurement speed: {cfg.measurement_speed}")
+    print(f"\tNumber of sweep averages: {cfg.number_of_sweep_averages}")
+    print(f"\tNumber of point averages: {cfg.number_of_point_averages}")
+    print(f"\tOscillator voltage: {cfg.oscillator_voltage} Volts")
+    print(f"\tBias voltage: {cfg.bias_voltage} Volts")
+    print(f"\tNumber of intervals: {cfg.number_of_intervals}")
+    print(f"\tInterval period: {cfg.interval_period} seconds")
 
     #inst.write('*RST')
     inst.write('*CLS')
@@ -114,40 +133,40 @@ def acquire(inst, config_filename):
     inst.write(':CALC1:PAR1:DEF R')
     inst.write(':CALC1:PAR2:DEF X')
     inst.write(':SENS1:SWE:TYPE LIN')
-    inst.write(f':SENS1:SWE:POIN {number_of_points}')
-    inst.write(f':SENS1:FREQ:START {start_frequency}')
-    inst.write(f':SENS1:FREQ:STOP {stop_frequency}')
-    inst.write(f':SENS1:AVER:COUN {number_of_point_averages}')
+    inst.write(f':SENS1:SWE:POIN {cfg.number_of_points}')
+    inst.write(f':SENS1:FREQ:START {cfg.start_frequency}')
+    inst.write(f':SENS1:FREQ:STOP {cfg.stop_frequency}')
+    inst.write(f':SENS1:AVER:COUN {cfg.number_of_point_averages}')
     inst.write(f':SENS1:AVER:STAT ON')
     # Measurement speed: [1 5] (1: fastest, 5: most accurate)
-    inst.write(f':SENS1:APER:TIME {measurement_speed}')
+    inst.write(f':SENS1:APER:TIME {cfg.measurement_speed}')
 
-    if number_of_sweep_averages > 1:
+    if cfg.number_of_sweep_averages > 1:
         inst.write(':TRIG:SEQ:AVER ON')
         inst.write(':CALC1:AVER ON')
-        inst.write(f':CALC1:AVER:COUN {number_of_sweep_averages}')
+        inst.write(f':CALC1:AVER:COUN {cfg.number_of_sweep_averages}')
     else:
         inst.write(':CALC1:AVER OFF')
 
     inst.write(':SOUR1:MODE VOLT')
-    inst.write(f':SOUR1:VOLT {oscillator_voltage}')
+    inst.write(f':SOUR1:VOLT {cfg.oscillator_voltage}')
     inst.write(':SOUR1:BIAS:MODE VOLT')
-    inst.write(f':SOUR1:BIAS:VOLT {bias_voltage}')
+    inst.write(f':SOUR1:BIAS:VOLT {cfg.bias_voltage}')
     inst.write(':SOUR:BIAS:STAT ON')
 
     inst.write(':INIT1:CONT ON')
     inst.write(':TRIG:SOUR BUS')
 
-    ydims = number_of_points, number_of_intervals
+    ydims = cfg.number_of_points, cfg.number_of_intervals
     yx = numpy.zeros(ydims, dtype=numpy.float32)
     yr = numpy.zeros(ydims, dtype=numpy.float32)
-    if plotting_enabled:
-        query = functools.partial(inst.query_ascii_values, separator=',',
-                                container=numpy.ndarray)
-        x = query(':SENS1:FREQ:DATA?')
+    query = functools.partial(inst.query_ascii_values, separator=',',
+                              container=numpy.ndarray)
+    x = query(':SENS1:FREQ:DATA?')
+    if cfg.plotting_enabled:
         pyy = PlotYY(x)
     start_time = time.time()
-    for i in range(0, number_of_intervals):
+    for i in range(0, cfg.number_of_intervals):
         inst.write('*CLS')
 #        inst.write(':DISP:WIND1:TRAC1:STAT OFF')
 #        inst.write(':DISP:WIND1:TRAC2:STAT OFF')
@@ -162,7 +181,11 @@ def acquire(inst, config_filename):
         inst.write(':DISP:WIND1:TRAC1:Y:AUTO')
         inst.write(':DISP:WIND1:TRAC2:Y:AUTO')
 
-        if plotting_enabled:
+        y = query(':CALC1:DATA:RDAT?')
+        yx[:,i] = y[::2]
+        yr[:,i] = y[1::2]
+
+        if cfg.plotting_enabled:
             rlev1 = to_int(inst.query(':DISP:WIND1:TRAC1:Y:RLEV?'))
             rlev2 = to_int(inst.query(':DISP:WIND1:TRAC2:Y:RLEV?'))
             ndiv = to_int(inst.query(':DISP:WIND1:Y:DIV?'))
@@ -170,13 +193,11 @@ def acquire(inst, config_filename):
             pdiv2 = to_int(inst.query(':DISP:WIND1:TRAC2:Y:PDIV?'))
             yxlim = rlev1 - ndiv / 2 * pdiv1, rlev1 + ndiv / 2 * pdiv1
             yrlim = rlev2 - ndiv / 2 * pdiv2, rlev2 + ndiv / 2 * pdiv2
-            y = query(':CALC1:DATA:RDAT?')
-            yx[:,i] = y[::2]
-            yr[:,i] = y[1::2]
             pyy.update(yx[:,i], yr[:,i], yxlim, yrlim)
 
-        if interval_period != 0:
-            sleep_time = interval_period * (i + 1) - (time.time() - start_time)
+        if cfg.interval_period != 0:
+            sleep_time = \
+                cfg.interval_period * (i + 1) - (time.time() - start_time)
             if sleep_time < 0:
                 print("The interval_period is too short")
                 return 1
@@ -187,16 +208,16 @@ def acquire(inst, config_filename):
         'time': time_now,
         'idn': idn,
         'acqProgramVersion': program_version,
-        'biasVoltage': bias_voltage,
-        'oscillatorVoltage': oscillator_voltage,
-        'measurementSpeed': measurement_speed,
-        'numberOfSweepAverages': number_of_sweep_averages,
-        'numberOfPointAverages': number_of_point_averages,
+        'biasVoltage': cfg.bias_voltage,
+        'oscillatorVoltage': cfg.oscillator_voltage,
+        'measurementSpeed': cfg.measurement_speed,
+        'numberOfSweepAverages': cfg.number_of_sweep_averages,
+        'numberOfPointAverages': cfg.number_of_point_averages,
         'userCalStatus': user_cal_status,
         'openCmpStatus': open_cmp_status,
         'shortCmpStatus': short_cmp_status,
         'loadCmpStatus': load_cmp_status,
-        'Frequency': (start_frequency, stop_frequency),
+        'Frequency': (cfg.start_frequency, cfg.stop_frequency),
         'X': yr,
         'R': yx,
     })
