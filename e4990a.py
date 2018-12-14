@@ -313,4 +313,4 @@ def parse_args():
 if __name__ == '__main__':
     time_now = datetime.datetime.now().isoformat()
     program_version = get_program_version()
-    main(*parse_args())
+    sys.exit(main(*parse_args()))
