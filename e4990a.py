@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""Acquisition script for Keysight E4990A."""
 
 import argparse
 import collections
@@ -33,7 +34,7 @@ def main(filename, config_filename):
     if not resources:
         print("No USB instruments found")
         return 1
-    elif len(resources) > 1:
+    if len(resources) > 1:
         print("Multiple USB instruments found:")
         for r in resources:
             print('\t' + r)
@@ -46,7 +47,7 @@ def main(filename, config_filename):
         return 1
     inst.timeout = 15000
     try:
-        rc = acquire(inst, cfg)
+        rc = acquire(inst, filename, cfg)
     finally:
         inst.write(':SOUR:BIAS:STAT OFF')
         inst.close()
@@ -94,9 +95,9 @@ def read_config(config_filename):
     )
 
 
-def acquire(inst, cfg):
+def acquire(inst, filename, cfg):
     print(f"Acquisition program version: {program_version}")
-    idn = inst.query(r'*IDN?').strip()
+    idn = inst.query('*IDN?').strip()
     print(idn)
 
     print("Acquisition parameters:")
@@ -161,7 +162,7 @@ def acquire(inst, cfg):
     yx = numpy.zeros(ydims, dtype=numpy.float32)
     yr = numpy.zeros(ydims, dtype=numpy.float32)
     query = functools.partial(inst.query_ascii_values, separator=',',
-                              container=numpy.ndarray)
+                              container=numpy.array)
     x = query(':SENS1:FREQ:DATA?')
     if cfg.plotting_enabled:
         pyy = PlotYY(x)
@@ -274,11 +275,13 @@ class PlotYY:
         pyplot.pause(0.001)
 
 
-if __name__ == '__main__':
+def get_program_version():
     r = subprocess.run('git describe --tags --always',
                        stdout=subprocess.PIPE, shell=True)
-    program_version = r.stdout.strip().decode()
-    time_now = datetime.datetime.now().isoformat()
+    return r.stdout.strip().decode()
+
+
+def parse_args():
     default = default_filename(time_now)
     parser = argparse.ArgumentParser(
         description="Keysight E4990A acquisition script")
@@ -304,4 +307,10 @@ if __name__ == '__main__':
                      f"to overwrite it (y/n)?")
         if resp.lower() != 'y':
             sys.exit(0)
-    main(filename, args.config_filename)
+    return filename, args.config_filename
+
+
+if __name__ == '__main__':
+    time_now = datetime.datetime.now().isoformat()
+    program_version = get_program_version()
+    main(*parse_args())
