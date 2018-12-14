@@ -60,9 +60,6 @@ def main(filename, config_filename):
 
 def read_config(config_filename):
     parser = configparser.ConfigParser()
-    if not os.path.exists(config_filename):
-        print(f"Config file '{config_filename}' not found")
-        return 1
 
     Config = collections.namedtuple('Configuration', [
         'start_frequency',
@@ -307,6 +304,9 @@ def parse_args():
                      f"to overwrite it (y/n)?")
         if resp.lower() != 'y':
             sys.exit(0)
+    if not os.path.exists(args.config_filename):
+        print(f"Config file '{args.config_filename}' not found")
+        sys.exit(1)
     return filename, args.config_filename
 
 
