@@ -209,7 +209,6 @@ def acquire(inst, filename, cfg):
         pyy = PlotYY(x)
     start_time = time.time()
     for i in range(0, cfg.number_of_intervals):
-        inst.write('*CLS')
 #        inst.write(':DISP:WIND1:TRAC1:STAT OFF')
 #        inst.write(':DISP:WIND1:TRAC2:STAT OFF')
         acq_start_time = time.time()
