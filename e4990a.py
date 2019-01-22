@@ -23,6 +23,10 @@ program_version = None
 time_now = None
 
 
+class E4990AError(Exception):
+    pass
+
+
 def to_int(s):
     if s is None:
         return s
@@ -36,14 +40,6 @@ def to_int(s):
 
 def main(filename, config_filename):
     cfg = read_config(config_filename)
-    if cfg.segments and any((cfg.start_frequency,
-                             cfg.stop_frequency,
-                             cfg.number_of_points)):
-        print("Configuration contains segmented and "
-              "non-segmented acquistion parameters.\n"
-              "Define either segments or start_frequency/"
-              "stop_frequency/number_of_points.")
-        return 1
     rm = visa.ResourceManager()
     print(rm.visalib)
     resources = rm.list_resources('USB?*INSTR')
@@ -94,7 +90,7 @@ def read_config(config_filename):
 
     parser.read(config_filename)
     sweep_section = parser['sweep']
-    return Config(
+    cfg = Config(
         to_int(sweep_section.getfloat('start_frequency')),
         to_int(sweep_section.getfloat('stop_frequency')),
         sweep_section.getint('number_of_points'),
@@ -108,6 +104,15 @@ def read_config(config_filename):
         sweep_section.getfloat('interval_period'),
         parser.getboolean('plotting', 'enabled', fallback=True)
     )
+    linear_sweep_params = \
+        (cfg.start_frequency, cfg.stop_frequency, cfg.number_of_points)
+    if cfg.segments and any(linear_sweep_params):
+        raise E4990AError(
+            "Configuration Error: Configuration contains segmented and "
+            "linear sweep parameters.\n"
+            "Define only segments or "
+            "start_frequency/stop_frequency/number_of_points.")
+    return cfg
 
 
 def acquire(inst, filename, cfg):
@@ -161,7 +166,11 @@ def acquire(inst, filename, cfg):
         inst.write(f':SENS1:SEGM:DATA 7,0,0,0,0,0,0,0,'
                    f'{number_of_segments},{cfg.segments}')
         number_of_points = sum(segments[:,2])
-        assert(number_of_points == to_int(inst.query(':SENS1:SEGM:SWE:POIN?')))
+        if number_of_points != to_int(inst.query(':SENS1:SEGM:SWE:POIN?')):
+                raise E4990AError(
+                        "Error: Number of points in segments definition does "
+                        "not match the number of points to be acquired in the "
+                        "segment sweep.")
     else:
         inst.write(':SENS1:SWE:TYPE LIN')
         inst.write(f':SENS1:FREQ:START {cfg.start_frequency}')
