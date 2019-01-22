@@ -314,6 +314,16 @@ def get_program_version():
     return r.stdout.strip().decode()
 
 
+class _ConfigFilenameAction(argparse.Action):
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        config_filename = values
+        if not os.path.exists(config_filename):
+            raise argparse.ArgumentError(self,
+                f"Config file '{config_filename}' not found")
+        setattr(namespace, self.dest, config_filename)
+
+
 def parse_args():
     default = default_filename(time_now)
     parser = argparse.ArgumentParser(
@@ -321,6 +331,7 @@ def parse_args():
     parser.add_argument('filename', nargs='?')
     parser.add_argument('--config', default='e4990a.ini',
                         dest='config_filename',
+                        action=_ConfigFilenameAction,
                         help="INI config filename (default: e4990.ini)")
     parser.add_argument('-d', '--default-filename', action='store_true',
                         dest='use_default_filename',
@@ -340,13 +351,14 @@ def parse_args():
                      f"to overwrite it (y/n)?")
         if resp.lower() != 'y':
             sys.exit(0)
-    if not os.path.exists(args.config_filename):
-        print(f"Config file '{args.config_filename}' not found")
-        sys.exit(1)
     return filename, args.config_filename
 
 
 if __name__ == '__main__':
     time_now = datetime.datetime.now().isoformat()
     program_version = get_program_version()
-    sys.exit(main(*parse_args()))
+    try:
+        sys.exit(main(*parse_args()))
+    except Exception as e:
+        print(e)
+        sys.exit(1)
