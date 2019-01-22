@@ -159,7 +159,7 @@ def acquire(inst, filename, cfg):
         number_of_segments = segments.size // 3
         segments.shape = number_of_segments, 3
         inst.write(f':SENS1:SEGM:DATA 7,0,0,0,0,0,0,0,'
-                    '{number_of_segments},{cfg.segments}')
+                   f'{number_of_segments},{cfg.segments}')
         number_of_points = sum(segments[:,2])
         assert(number_of_points == to_int(inst.query(':SENS1:SEGM:SWE:POIN?')))
     else:
