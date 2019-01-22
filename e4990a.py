@@ -153,7 +153,6 @@ def acquire(inst, filename, cfg):
 
     inst.write(':CALC1:PAR1:DEF R')
     inst.write(':CALC1:PAR2:DEF X')
-    inst.write(':SENS1:SWE:TYPE LIN')
     if cfg.segments is not None:
         inst.write(':SENS1:SWE:TYPE SEGM')
         segments = numpy.array(to_int(cfg.segments))
@@ -164,6 +163,7 @@ def acquire(inst, filename, cfg):
         number_of_points = sum(segments[:,2])
         assert(number_of_points == to_int(inst.query(':SENS1:SEGM:SWE:POIN?')))
     else:
+        inst.write(':SENS1:SWE:TYPE LIN')
         inst.write(f':SENS1:FREQ:START {cfg.start_frequency}')
         inst.write(f':SENS1:FREQ:STOP {cfg.stop_frequency}')
         inst.write(f':SENS1:SWE:POIN {cfg.number_of_points}')
