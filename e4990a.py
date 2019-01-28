@@ -44,29 +44,25 @@ def main(filename, config_filename):
     print(rm.visalib)
     resources = rm.list_resources('USB?*INSTR')
     if not resources:
-        print("No USB instruments found")
-        return 1
+        raise E4990AError("No USB instruments found")
     if len(resources) > 1:
-        print("Multiple USB instruments found:")
+        msg = "Multiple USB instruments found:\n"
         for r in resources:
-            print('\t' + r)
-        return 1
+            msg += ('\t' + r)
+        raise E4990AError(msg)
 
     try:
         inst = rm.open_resource(resources[0])
     except pyvisa.errors.VisaIOError as e:
-        print(f"\n{e}")
-        return 1
+        raise E4990AError(f"{e}")
     try:
-        rc = acquire(inst, filename, cfg)
+        acquire(inst, filename, cfg)
     finally:
         inst.write(':SOUR:BIAS:STAT OFF')
         inst.close()
         rm.close()
 
-    if rc == 0:
-        input("Press [ENTER] to exit\n")
-    return rc
+    input("Press [ENTER] to exit\n")
 
 
 def read_config(config_filename):
@@ -107,8 +103,7 @@ def read_config(config_filename):
         (cfg.start_frequency, cfg.stop_frequency, cfg.number_of_points)
     if cfg.segments and any(linear_sweep_params):
         raise E4990AError(
-            "Configuration Error: Configuration contains segmented and "
-            "linear sweep parameters.\n"
+            "Configuration contains segmented and linear sweep parameters.\n"
             "Define only segments or "
             "start_frequency/stop_frequency/number_of_points.")
     return cfg
@@ -170,7 +165,7 @@ def acquire(inst, filename, cfg):
         number_of_points = sum(segments[:,2])
         if number_of_points != to_int(inst.query(':SENS1:SEGM:SWE:POIN?')):
                 raise E4990AError(
-                        "Error: Number of points in segments definition does "
+                        "Number of points in segments definition does "
                         "not match the number of points to be acquired in the "
                         "segment sweep.")
     else:
@@ -242,8 +237,7 @@ def acquire(inst, filename, cfg):
             sleep_time = \
                 cfg.interval_period * (i + 1) - (time.time() - start_time)
             if sleep_time < 0:
-                print("The interval_period is too short")
-                return 1
+                raise E4990AError("The interval_period is too short")
             print(f"Sleeping for {sleep_time:.2f} s")
             time.sleep(sleep_time)
 
@@ -371,5 +365,5 @@ if __name__ == '__main__':
     try:
         sys.exit(main(*parse_args()))
     except Exception as e:
-        print(e)
+        print(f"\nERROR: {e}")
         sys.exit(1)
