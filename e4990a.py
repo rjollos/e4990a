@@ -146,6 +146,8 @@ def acquire(inst, filename, cfg):
     def print_status(st):
         return "ON" if st else "OFF"
 
+    fixture = inst.query(':SENS:FIXT:SEL?').strip()
+    print(f"Fixture: {fixture}")
     print("Calibration status:")
     user_cal_status = to_int(inst.query(':SENS1:CORR1:STAT?'))
     print(f"\tUser calibration: {print_status(user_cal_status)}")
@@ -259,6 +261,7 @@ def acquire(inst, filename, cfg):
         'openCmpStatus': open_cmp_status,
         'shortCmpStatus': short_cmp_status,
         'loadCmpStatus': load_cmp_status,
+        'fixture': fixture,
         'Frequency': x,
         'X': yr,
         'R': yx,
