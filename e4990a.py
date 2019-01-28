@@ -57,7 +57,6 @@ def main(filename, config_filename):
     except pyvisa.errors.VisaIOError as e:
         print(f"\n{e}")
         return 1
-    inst.timeout = 15000
     try:
         rc = acquire(inst, filename, cfg)
     finally:
@@ -160,6 +159,7 @@ def acquire(inst, filename, cfg):
 
     inst.write(':CALC1:PAR1:DEF R')
     inst.write(':CALC1:PAR2:DEF X')
+    inst.timeout = 15000
     if cfg.segments is not None:
         inst.write(':SENS1:SWE:TYPE SEGM')
         segments = numpy.array(to_int(cfg.segments))
