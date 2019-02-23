@@ -30,12 +30,11 @@ class E4990AError(Exception):
 def to_int(s):
     if s is None:
         return s
-    elif isinstance(s, numbers.Number):
+    if isinstance(s, numbers.Number):
         return int(float(s))
-    elif ',' in s:  # comma-separated values
+    if ',' in s:  # comma-separated values
         return [int(float(f)) for f in s.strip().split(',')]
-    else:
-        return int(float(s.strip()))
+    return int(float(s.strip()))
 
 
 def main(filename, config_filename):
@@ -164,10 +163,9 @@ def acquire(inst, filename, cfg):
                    f'{number_of_segments},{cfg.segments}')
         number_of_points = sum(segments[:,2])
         if number_of_points != to_int(inst.query(':SENS1:SEGM:SWE:POIN?')):
-                raise E4990AError(
-                        "Number of points in segments definition does "
-                        "not match the number of points to be acquired in the "
-                        "segment sweep.")
+            raise E4990AError("Number of points in segments definition does "
+                              "not match the number of points to be acquired "
+                              "in the segment sweep.")
     else:
         inst.write(':SENS1:SWE:TYPE LIN')
         inst.write(f':SENS1:FREQ:START {cfg.start_frequency}')
@@ -324,8 +322,8 @@ class _ConfigFilenameAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
         config_filename = values
         if not os.path.exists(config_filename):
-            raise argparse.ArgumentError(self,
-                f"Config file '{config_filename}' not found")
+            raise argparse.ArgumentError(
+                self, f"Config file '{config_filename}' not found")
         setattr(namespace, self.dest, config_filename)
 
 
