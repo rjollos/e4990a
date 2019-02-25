@@ -37,7 +37,7 @@ def to_int(s):
     return int(float(s.strip()))
 
 
-def main(filename, config_filename):
+def main(filename, config_filename, fixture_compensation):
     cfg = read_config(config_filename)
     rm = visa.ResourceManager()
     print(rm.visalib)
@@ -54,14 +54,20 @@ def main(filename, config_filename):
         inst = rm.open_resource(resources[0])
     except pyvisa.errors.VisaIOError as e:
         raise E4990AError(f"{e}")
+    inst.timeout = 15000
     try:
-        acquire(inst, filename, cfg)
+        if fixture_compensation:
+            run_fixture_compensation(inst, cfg)
+        else:
+            try:
+                acquire(inst, filename, cfg)
+            finally:
+                inst.write(':SOUR:BIAS:STAT OFF')
+            input("Press [ENTER] to exit\n")
     finally:
-        inst.write(':SOUR:BIAS:STAT OFF')
         inst.close()
         rm.close()
 
-    input("Press [ENTER] to exit\n")
 
 
 def read_config(config_filename):
@@ -112,6 +118,8 @@ def acquire(inst, filename, cfg):
     print(f"Acquisition program version: {program_version}")
     idn = inst.query('*IDN?').strip()
     print(idn)
+    opt = inst.query('*OPT?').strip()
+    print('Options installed:', opt)
 
     print("Acquisition parameters:")
     if cfg.start_frequency is not None:
@@ -130,61 +138,45 @@ def acquire(inst, filename, cfg):
     print(f"\tNumber of intervals: {cfg.number_of_intervals}")
     print(f"\tInterval period: {cfg.interval_period} seconds")
 
-    #inst.write('*RST')
     inst.write('*CLS')
-    #inst.write(':SENS1:CORR1:STAT ON')
-    #inst.write(':SENS1:CORR2:OPEN ON')
-    #inst.write(':SENS1:CORR2:SHOR ON')
-    #inst.write(':SENS1:CORR2:LOAD ON')
     def print_status(st):
         return "ON" if st else "OFF"
 
     fixture = inst.query(':SENS:FIXT:SEL?').strip()
     print(f"Fixture: {fixture}")
     print("Calibration status:")
-    user_cal_status = to_int(inst.query(':SENS1:CORR1:STAT?'))
-    print(f"\tUser calibration: {print_status(user_cal_status)}")
     open_cmp_status = to_int(inst.query(':SENS1:CORR2:OPEN?'))
     print(f"\tOpen fixture compensation: {print_status(open_cmp_status)}")
     short_cmp_status = to_int(inst.query(':SENS1:CORR2:SHOR?'))
     print(f"\tShort fixture compensation: {print_status(short_cmp_status)}")
-    load_cmp_status = to_int(inst.query(':SENS1:CORR2:LOAD?'))
-    print(f"\tLoad fixture compensation: {print_status(load_cmp_status)}")
 
-    inst.write(':CALC1:PAR1:DEF R')
-    inst.write(':CALC1:PAR2:DEF X')
-    inst.timeout = 15000
-    if cfg.segments is not None:
-        inst.write(':SENS1:SWE:TYPE SEGM')
-        segments = numpy.array(to_int(cfg.segments))
-        number_of_segments = segments.size // 3
-        segments.shape = number_of_segments, 3
-        inst.write(f':SENS1:SEGM:DATA 7,0,0,0,0,0,0,0,'
-                   f'{number_of_segments},{cfg.segments}')
-        number_of_points = sum(segments[:,2])
-        if number_of_points != to_int(inst.query(':SENS1:SEGM:SWE:POIN?')):
-            raise E4990AError("Number of points in segments definition does "
-                              "not match the number of points to be acquired "
-                              "in the segment sweep.")
-    else:
-        inst.write(':SENS1:SWE:TYPE LIN')
-        inst.write(f':SENS1:FREQ:START {cfg.start_frequency}')
-        inst.write(f':SENS1:FREQ:STOP {cfg.stop_frequency}')
-        inst.write(f':SENS1:SWE:POIN {cfg.number_of_points}')
-        number_of_points = cfg.number_of_points
+    query = functools.partial(inst.query_ascii_values, separator=',',
+                              container=numpy.array)
 
-    inst.write(f':SENS1:AVER:COUN {cfg.number_of_point_averages}')
-    inst.write(f':SENS1:AVER:STAT ON')
-    # Measurement speed: [1 5] (1: fastest, 5: most accurate)
-    inst.write(f':SENS1:APER:TIME {cfg.measurement_speed}')
+    number_of_points = configure_sweep_parameters(inst, cfg)
 
-    if cfg.number_of_sweep_averages > 1:
-        inst.write(':TRIG:SEQ:AVER ON')
-        inst.write(':CALC1:AVER ON')
-        inst.write(f':CALC1:AVER:COUN {cfg.number_of_sweep_averages}')
-    else:
-        inst.write(':CALC1:AVER OFF')
+    x = query(':SENS1:FREQ:DATA?')
 
+    # Check that calibration is valid for the sweep frequency range.
+    # Assume that frequencies for short calibration are the same.
+    fix_cmp_frequencies = query(':SENS1:CORR2:ZME:OPEN:FREQ?')
+    fix_cmp_number_of_points = to_int(inst.query(':SENS1:CORR2:ZME:OPEN:POIN?'))
+    if number_of_points != fix_cmp_number_of_points or \
+            not numpy.array_equal(x, fix_cmp_frequencies):
+        raise E4990AError(
+            "Fixture compensation data is not valid for the sweep "
+            "frequency range")
+
+    def to_complex(a):
+        av = a.view().reshape(a.size//2, 2)
+        return av.view(dtype=numpy.complex64)
+
+    fixture_cmp_open_impedance = \
+        to_complex(query(':SENS1:CORR2:ZME:OPEN:DATA?'))
+    fixture_cmp_short_impedance = \
+        to_complex(query(':SENS1:CORR2:ZME:SHOR:DATA?'))
+
+    # Set oscillator voltage and bias voltage
     inst.write(':SOUR1:MODE VOLT')
     inst.write(f':SOUR1:VOLT {cfg.oscillator_voltage}')
     inst.write(':SOUR1:BIAS:MODE VOLT')
@@ -197,9 +189,6 @@ def acquire(inst, filename, cfg):
     ydims = number_of_points, cfg.number_of_intervals
     yx = numpy.zeros(ydims, dtype=numpy.float32)
     yr = numpy.zeros(ydims, dtype=numpy.float32)
-    query = functools.partial(inst.query_ascii_values, separator=',',
-                              container=numpy.array)
-    x = query(':SENS1:FREQ:DATA?')
     if cfg.plotting_enabled:
         pyy = PlotYY(x)
     start_time = time.time()
@@ -249,11 +238,11 @@ def acquire(inst, filename, cfg):
         'measurementSpeed': cfg.measurement_speed,
         'numberOfSweepAverages': cfg.number_of_sweep_averages,
         'numberOfPointAverages': cfg.number_of_point_averages,
-        'userCalStatus': user_cal_status,
         'openCmpStatus': open_cmp_status,
         'shortCmpStatus': short_cmp_status,
-        'loadCmpStatus': load_cmp_status,
         'fixture': fixture,
+        'FixtureCmpOpenImpedance': fixture_cmp_open_impedance,
+        'FixtureCmpShortImpedance': fixture_cmp_short_impedance,
         'Frequency': x,
         'X': yr,
         'R': yx,
@@ -310,6 +299,59 @@ class PlotYY:
         pyplot.draw()
         pyplot.pause(0.001)
 
+def configure_sweep_parameters(inst, cfg):
+    inst.write(':CALC1:PAR1:DEF R')
+    inst.write(':CALC1:PAR2:DEF X')
+    if cfg.segments is not None:
+        inst.write(':SENS1:SWE:TYPE SEGM')
+        segments = numpy.array(to_int(cfg.segments))
+        number_of_segments = segments.size // 3
+        segments.shape = number_of_segments, 3
+        inst.write(f':SENS1:SEGM:DATA 7,0,0,0,0,0,0,0,'
+                   f'{number_of_segments},{cfg.segments}')
+        number_of_points = sum(segments[:,2])
+        if number_of_points != to_int(inst.query(':SENS1:SEGM:SWE:POIN?')):
+            raise E4990AError("Number of points in segments definition does "
+                              "not match the number of points to be acquired "
+                              "in the segment sweep.")
+    else:
+        inst.write(':SENS1:SWE:TYPE LIN')
+        inst.write(f':SENS1:FREQ:START {cfg.start_frequency}')
+        inst.write(f':SENS1:FREQ:STOP {cfg.stop_frequency}')
+        inst.write(f':SENS1:SWE:POIN {cfg.number_of_points}')
+        number_of_points = cfg.number_of_points
+
+    inst.write(f':SENS1:AVER:COUN {cfg.number_of_point_averages}')
+    inst.write(f':SENS1:AVER:STAT ON')
+    # Measurement speed: [1 5] (1: fastest, 5: most accurate)
+    inst.write(f':SENS1:APER:TIME {cfg.measurement_speed}')
+
+    if cfg.number_of_sweep_averages > 1:
+        inst.write(':TRIG:SEQ:AVER ON')
+        inst.write(':CALC1:AVER ON')
+        inst.write(f':CALC1:AVER:COUN {cfg.number_of_sweep_averages}')
+    else:
+        inst.write(':CALC1:AVER OFF')
+    return number_of_points
+
+
+def run_fixture_compensation(inst, cfg):
+    inst.write('SYST:PRES')
+    configure_sweep_parameters(inst, cfg)
+    # Oscillator voltage should be 500 mV during compensation per manual.
+    inst.write(':SOUR1:MODE VOLT')
+    inst.write(f':SOUR1:VOLT 0.5')
+    print("Starting fixture compensation procedure")
+    inst.write(':SENS1:CORR:COLL:FPO USER')
+    input("Put the test fixture's device contacts in the OPEN state "
+          "and press [ENTER]")
+    inst.write(':SENS1:CORR2:COLL:ACQ:OPEN')
+    inst.query('*OPC?')
+    input("Put the test fixture's device contacts in the SHORT state "
+          "and press [ENTER]")
+    inst.write('SENS1:CORR2:COLL:ACQ:SHOR')
+    inst.query('*OPC?')
+
 
 def get_program_version():
     r = subprocess.run('git describe --tags --always',
@@ -343,29 +385,34 @@ def parse_args():
     parser.add_argument('-d', '--default-filename', action='store_true',
                         dest='use_default_filename',
                         help="Use default filename for saving data")
+    parser.add_argument('-c', '--fixture-compensation', action='store_true',
+                        help="Execute fixture fixture_compensation procedure")
     args = parser.parse_args()
-    if args.filename:
-        filename = args.filename
-    elif args.use_default_filename:
-        filename = default
-    else:
-        filename = input(f"Enter a filepath or press [ENTER] to accept the "
-                         f"default ({default}.mat):") or default
-    if not filename.endswith(fileext):
-        filename += fileext
-    if os.path.exists(filename):
-        resp = input(f"File {filename} exists. Are you sure you want "
-                     f"to overwrite it (y/n)?")
-        if resp.lower() != 'y':
-            sys.exit(0)
-    return filename, args.config_filename
+    filename = None
+    if not args.fixture_compensation:
+        if args.filename:
+            filename = args.filename
+        elif args.use_default_filename:
+            filename = default
+        else:
+            filename = input(f"Enter a filepath or press [ENTER] to accept the "
+                             f"default ({default}.mat):") or default
+        if not filename.endswith(fileext):
+            filename += fileext
+        if os.path.exists(filename):
+            resp = input(f"File {filename} exists. Are you sure you want "
+                         f"to overwrite it (y/n)?")
+            if resp.lower() != 'y':
+                sys.exit(0)
+    return filename, args
 
 
 if __name__ == '__main__':
     time_now = datetime.datetime.now().isoformat()
     program_version = get_program_version()
+    filename, args = parse_args()
     try:
-        sys.exit(main(*parse_args()))
+        main(filename, args.config_filename, args.fixture_compensation)
     except Exception as e:
         print(f"\nERROR: {e}")
         sys.exit(1)

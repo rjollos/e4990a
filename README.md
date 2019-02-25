@@ -23,6 +23,15 @@ The [PyVISA](https://pyvisa.readthedocs.io) library is used to communicate with 
     > venv\Scripts\activate.bat
     ```
 1. Set the capture parameters in `e4990a.ini`.
+1. Execute the fixture compensation procedure.
+    ```
+    > python -m e4990a -c
+    Visa Library at C:\Windows\system32\visa64.dll
+    Starting fixture compensation procedure
+    Put the test fixture's device contacts in the OPEN state and press [ENTER]
+    Put the test fixture's device contacts in the SHORT state and press [ENTER]
+    ```
+
 1. Execute the script and accept the default filename for storing the data, or specify the filename. The `.mat` extension will be appended if not provided.
     ```
     > python -m e4990a
