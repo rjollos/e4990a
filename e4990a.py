@@ -314,7 +314,11 @@ class PlotYY:
 def get_program_version():
     r = subprocess.run('git describe --tags --always',
                        stdout=subprocess.PIPE, shell=True)
-    return r.stdout.strip().decode()
+    tag_or_hash = r.stdout.strip().decode()
+    r = subprocess.run('git diff --stat',
+                       stdout=subprocess.PIPE, shell=True)
+    is_dirty = r.stdout.strip().decode() != ''
+    return tag_or_hash + ' (dirty)' if is_dirty else ''
 
 
 class _ConfigFilenameAction(argparse.Action):
