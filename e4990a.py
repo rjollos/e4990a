@@ -177,8 +177,7 @@ def acquire(inst, filename, cfg):
         to_complex(query(':SENS1:CORR2:ZME:SHOR:DATA?'))
 
     # Set oscillator voltage and bias voltage
-    inst.write(':SOUR1:MODE VOLT')
-    inst.write(f':SOUR1:VOLT {cfg.oscillator_voltage}')
+    configure_osc_voltage(inst, cfg.oscillator_voltage)
     inst.write(':SOUR1:BIAS:MODE VOLT')
     inst.write(f':SOUR1:BIAS:VOLT {cfg.bias_voltage}')
     inst.write(':SOUR:BIAS:STAT ON')
@@ -335,12 +334,16 @@ def configure_sweep_parameters(inst, cfg):
     return number_of_points
 
 
+def configure_osc_voltage(inst, volt):
+    inst.write(':SOUR1:MODE VOLT')
+    inst.write(f':SOUR1:VOLT {volt}')
+
+
 def run_fixture_compensation(inst, cfg):
     inst.write('SYST:PRES')
     configure_sweep_parameters(inst, cfg)
     # Oscillator voltage should be 500 mV during compensation per manual.
-    inst.write(':SOUR1:MODE VOLT')
-    inst.write(f':SOUR1:VOLT 0.5')
+    configure_osc_voltage(inst, 0.5)
     print("Starting fixture compensation procedure")
     inst.write(':SENS1:CORR:COLL:FPO USER')
     input("Put the test fixture's device contacts in the OPEN state "
