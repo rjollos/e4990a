@@ -11,6 +11,7 @@ import os
 import subprocess
 import sys
 import time
+import traceback
 
 import matplotlib.pyplot as pyplot
 import numpy
@@ -388,6 +389,8 @@ def parse_args():
     parser.add_argument('-d', '--default-filename', action='store_true',
                         dest='use_default_filename',
                         help="Use default filename for saving data")
+    parser.add_argument('--debug', action='store_true',
+                        help="Print tracebacks for debugging")
     parser.add_argument('-c', '--fixture-compensation', action='store_true',
                         help="Execute fixture fixture_compensation procedure")
     args = parser.parse_args()
@@ -417,5 +420,8 @@ if __name__ == '__main__':
     try:
         main(filename, args.config_filename, args.fixture_compensation)
     except Exception as e:
-        print(f"\nERROR: {e}")
+        if args.debug:
+            traceback.print_exc()
+        else:
+            print(f"\nERROR: {e}")
         sys.exit(1)
