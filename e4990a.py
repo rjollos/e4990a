@@ -34,7 +34,7 @@ def to_int(s):
     if isinstance(s, numbers.Number):
         return int(float(s))
     if ',' in s:  # comma-separated values
-        return [int(float(f)) for f in s.strip().split(',')]
+        return [int(float(f.strip())) for f in s.strip().split(',')]
     return int(float(s.strip()))
 
 
@@ -68,7 +68,6 @@ def main(filename, config_filename, fixture_compensation):
     finally:
         inst.close()
         rm.close()
-
 
 
 def read_config(config_filename):
@@ -193,16 +192,12 @@ def acquire(inst, filename, cfg):
         pyy = PlotYY(x)
     start_time = time.time()
     for i in range(0, cfg.number_of_intervals):
-#        inst.write(':DISP:WIND1:TRAC1:STAT OFF')
-#        inst.write(':DISP:WIND1:TRAC2:STAT OFF')
         acq_start_time = time.time()
         inst.write(':TRIG:SING')
         inst.query('*OPC?')
         acq_end_time = time.time() - acq_start_time
         print(f"Acquisition time is {acq_end_time:.2f} s")
 
-#        inst.write(':DISP:WIND1:TRAC1:STAT ON')
-#        inst.write(':DISP:WIND1:TRAC2:STAT ON')
         inst.write(':DISP:WIND1:TRAC1:Y:AUTO')
         inst.write(':DISP:WIND1:TRAC2:Y:AUTO')
 
@@ -341,19 +336,19 @@ def configure_osc_voltage(inst, volt):
 
 
 def run_fixture_compensation(inst, cfg):
-    inst.write('SYST:PRES')
+    inst.write(':SYST:PRES')
     configure_sweep_parameters(inst, cfg)
-    # Oscillator voltage should be 500 mV during compensation per manual.
+    inst.write(':SENS1:CORR:COLL:FPO USER')
+    # Per manual, oscillator voltage should be 500 mV during compensation.
     configure_osc_voltage(inst, 0.5)
     print("Starting fixture compensation procedure")
-    inst.write(':SENS1:CORR:COLL:FPO USER')
     input("Put the test fixture's device contacts in the OPEN state "
           "and press [ENTER]")
     inst.write(':SENS1:CORR2:COLL:ACQ:OPEN')
     inst.query('*OPC?')
     input("Put the test fixture's device contacts in the SHORT state "
           "and press [ENTER]")
-    inst.write('SENS1:CORR2:COLL:ACQ:SHOR')
+    inst.write(':SENS1:CORR2:COLL:ACQ:SHOR')
     inst.query('*OPC?')
 
 
@@ -401,8 +396,8 @@ def parse_args():
         elif args.use_default_filename:
             filename = default
         else:
-            filename = input(f"Enter a filepath or press [ENTER] to accept the "
-                             f"default ({default}.mat):") or default
+            filename = input(f"Enter a filepath or press [ENTER] to accept "
+                             f"the default ({default}.mat):") or default
         if not filename.endswith(fileext):
             filename += fileext
         if os.path.exists(filename):
