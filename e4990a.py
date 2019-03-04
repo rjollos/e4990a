@@ -55,6 +55,7 @@ def main(filename, config_filename, fixture_compensation):
         inst = rm.open_resource(resources[0])
     except pyvisa.errors.VisaIOError as e:
         raise E4990AError(f"{e}")
+    # Timeout must be longer than sweep interval.
     inst.timeout = 15000
     try:
         if fixture_compensation:
