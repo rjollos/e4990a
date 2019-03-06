@@ -130,9 +130,10 @@ def acquire(inst, config_filename):
 
     inst.write(':SOUR1:MODE VOLT')
     inst.write(f':SOUR1:VOLT {oscillator_voltage}')
-    inst.write(':SOUR1:BIAS:MODE VOLT')
-    inst.write(f':SOUR1:BIAS:VOLT {bias_voltage}')
-    inst.write(':SOUR:BIAS:STAT ON')
+    if bias_voltage > 0:
+        inst.write(':SOUR1:BIAS:MODE VOLT')
+        inst.write(f':SOUR1:BIAS:VOLT {bias_voltage}')
+        inst.write(':SOUR:BIAS:STAT ON')
 
     inst.write(':INIT1:CONT ON')
     inst.write(':TRIG:SOUR BUS')
