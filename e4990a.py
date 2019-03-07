@@ -179,7 +179,7 @@ def acquire(inst, filename, cfg):
 
     # Set oscillator voltage and bias voltage
     configure_osc_voltage(inst, cfg.oscillator_voltage)
-    if cfg.bias_voltage > 0:
+    if cfg.bias_voltage != 0:
         inst.write(':SOUR1:BIAS:MODE VOLT')
         inst.write(f':SOUR1:BIAS:VOLT {cfg.bias_voltage}')
         inst.write(':SOUR:BIAS:STAT ON')
