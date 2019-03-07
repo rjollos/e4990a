@@ -100,7 +100,7 @@ def read_config(config_filename):
         sweep_section.getint('number_of_sweep_averages', fallback=1),
         sweep_section.getint('number_of_point_averages', fallback=1),
         sweep_section.getfloat('oscillator_voltage'),
-        sweep_section.getint('bias_voltage'),
+        sweep_section.getfloat('bias_voltage'),
         sweep_section.getint('number_of_intervals'),
         sweep_section.getfloat('interval_period'),
         parser.getboolean('plotting', 'enabled', fallback=True)
