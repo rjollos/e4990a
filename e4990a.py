@@ -74,7 +74,7 @@ def acquire(inst, config_filename):
     number_of_point_averages = \
         sweep_section.getint('number_of_point_averages', fallback=1)
     oscillator_voltage = sweep_section.getfloat('oscillator_voltage')
-    bias_voltage = sweep_section.getint('bias_voltage')
+    bias_voltage = sweep_section.getfloat('bias_voltage')
     number_of_intervals = sweep_section.getint('number_of_intervals')
     interval_period = sweep_section.getfloat('interval_period')
     plotting_enabled = parser.getboolean('plotting', 'enabled', fallback=True)
