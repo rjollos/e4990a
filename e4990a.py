@@ -28,14 +28,26 @@ class E4990AError(Exception):
     pass
 
 
-def to_int(s):
+def to_number(f, s):
     if s is None:
         return s
     if isinstance(s, numbers.Number):
-        return int(float(s))
+        return f(float(s))
     if ',' in s:  # comma-separated values
-        return [int(float(f.strip())) for f in s.strip().split(',')]
-    return int(float(s.strip()))
+        return [f(float(f.strip())) for f in s.strip().split(',')]
+    return f(float(s.strip()))
+
+
+def to_int(s):
+    return to_number(int, s)
+
+
+def to_float(s, precision=None):
+    if precision is not None:
+        f = functools.partial(round, ndigits=precision)
+    else:
+        f = lambda x: x
+    return to_number(f, s)
 
 
 def main(filename, config_filename, fixture_compensation):
@@ -99,8 +111,8 @@ def read_config(config_filename):
         sweep_section.getint('measurement_speed', fallback=1),
         sweep_section.getint('number_of_sweep_averages', fallback=1),
         sweep_section.getint('number_of_point_averages', fallback=1),
-        sweep_section.getfloat('oscillator_voltage'),
-        sweep_section.getfloat('bias_voltage'),
+        to_float(sweep_section.getfloat('oscillator_voltage'), 3),
+        to_float(sweep_section.getfloat('bias_voltage'), 3),
         sweep_section.getint('number_of_intervals'),
         sweep_section.getfloat('interval_period'),
         parser.getboolean('plotting', 'enabled', fallback=True)
