@@ -19,16 +19,20 @@ import pyvisa
 import scipy.io as scio
 import visa
 
-fileext = '.mat'
+FILE_EXT = '.mat'
 program_version = None
 time_now = None
 
 
 class E4990AError(Exception):
-    pass
+    """Exception class for all errors raised in this module.
+
+    The `main` function has an exception handler for this class.
+    """
 
 
 def to_number(f, s):
+    """Convert string to a number with format specified by `f`."""
     if s is None:
         return s
     if isinstance(s, numbers.Number):
@@ -39,10 +43,12 @@ def to_number(f, s):
 
 
 def to_int(s):
+    """Convert string to an integer."""
     return to_number(int, s)
 
 
 def to_float(s, precision=None):
+    """Convert string to a float."""
     if precision is not None:
         f = functools.partial(round, ndigits=precision)
     else:
@@ -50,7 +56,10 @@ def to_float(s, precision=None):
     return to_number(f, s)
 
 
-def main(filename, config_filename, fixture_compensation):
+def acquire(filename, config_filename, fixture_compensation):
+    """Read the configuration file, initiate communication with the
+    instrument and execute the sweep or fixture compensation.
+    """
     cfg = read_config(config_filename)
     rm = visa.ResourceManager()
     print(rm.visalib)
@@ -74,7 +83,7 @@ def main(filename, config_filename, fixture_compensation):
             run_fixture_compensation(inst, cfg)
         else:
             try:
-                acquire(inst, filename, cfg)
+                run_sweep(inst, filename, cfg)
             finally:
                 inst.write(':SOUR:BIAS:STAT OFF')
             input("Press [ENTER] to exit\n")
@@ -84,9 +93,12 @@ def main(filename, config_filename, fixture_compensation):
 
 
 def read_config(config_filename):
+    """Parse the configuration file and return a named tuple of
+    configuration data.
+    """
     parser = configparser.ConfigParser()
 
-    Config = collections.namedtuple('Configuration', [
+    ConfigBase = collections.namedtuple('ConfigBase', [
         'start_frequency',
         'stop_frequency',
         'number_of_points',
@@ -101,9 +113,30 @@ def read_config(config_filename):
         'plotting_enabled'
     ])
 
+    class Configuration(ConfigBase):
+        def print(self):
+            """Print the configuration parameters."""
+            print("Acquisition parameters:")
+            if self.start_frequency is not None:
+                print(f"\tStart frequency: {self.start_frequency / 1e3:.3e} kHz")
+            if self.stop_frequency is not None:
+                print(f"\tStop frequency: {self.stop_frequency / 1e3:.3e} kHz")
+            if self.number_of_points is not None:
+                print(f"\tNumber of points: {self.number_of_points}")
+            if self.segments is not None:
+                print(f"\tSegments: {self.segments}")
+            print(f"\tMeasurement speed: {self.measurement_speed}")
+            print(f"\tNumber of sweep averages: {self.number_of_sweep_averages}")
+            print(f"\tNumber of point averages: {self.number_of_point_averages}")
+            print(f"\tOscillator voltage: {self.oscillator_voltage} Volts")
+            print(f"\tBias voltage: {self.bias_voltage} Volts")
+            print(f"\tNumber of intervals: {self.number_of_intervals}")
+            print(f"\tInterval period: {self.interval_period} seconds")
+            print(f"\tPlotting enabled: {self.plotting_enabled}")
+
     parser.read(config_filename)
     sweep_section = parser['sweep']
-    cfg = Config(
+    cfg = Configuration(
         to_int(sweep_section.getfloat('start_frequency')),
         to_int(sweep_section.getfloat('stop_frequency')),
         sweep_section.getint('number_of_points'),
@@ -127,29 +160,14 @@ def read_config(config_filename):
     return cfg
 
 
-def acquire(inst, filename, cfg):
+def run_sweep(inst, filename, cfg):
+    """Execute the sweep acquisition and save data to a MAT file."""
     print(f"Acquisition program version: {program_version}")
     idn = inst.query('*IDN?').strip()
     print(idn)
     opt = inst.query('*OPT?').strip()
     print('Options installed:', opt)
-
-    print("Acquisition parameters:")
-    if cfg.start_frequency is not None:
-        print(f"\tStart frequency: {cfg.start_frequency / 1e3:.3e} kHz")
-    if cfg.stop_frequency is not None:
-        print(f"\tStop frequency: {cfg.stop_frequency / 1e3:.3e} kHz")
-    if cfg.number_of_points is not None:
-        print(f"\tNumber of points: {cfg.number_of_points}")
-    if cfg.segments is not None:
-        print(f"\tSegments: {cfg.segments}")
-    print(f"\tMeasurement speed: {cfg.measurement_speed}")
-    print(f"\tNumber of sweep averages: {cfg.number_of_sweep_averages}")
-    print(f"\tNumber of point averages: {cfg.number_of_point_averages}")
-    print(f"\tOscillator voltage: {cfg.oscillator_voltage} Volts")
-    print(f"\tBias voltage: {cfg.bias_voltage} Volts")
-    print(f"\tNumber of intervals: {cfg.number_of_intervals}")
-    print(f"\tInterval period: {cfg.interval_period} seconds")
+    cfg.print()
 
     inst.write('*CLS')
     def print_status(st):
@@ -270,6 +288,7 @@ def default_filename(now=None):
 
 
 class PlotYY:
+    """Plot two time series with separate y-axis."""
 
     def __init__(self, t):
         self._t = t / 1e3  # Hz -> kHz
@@ -293,6 +312,7 @@ class PlotYY:
         pyplot.show()
 
     def update(self, y1, y2, y1lim=None, y2lim=None):
+        """Refresh the axes with new time series data."""
         if not self._lines1:
             self._lines1 = self._ax1.plot(self._t, y1, color=self._color1)
         else:
@@ -309,6 +329,7 @@ class PlotYY:
         pyplot.pause(0.001)
 
 def configure_sweep_parameters(inst, cfg):
+    """Configure instrument with specified sweep parameters."""
     inst.write(':CALC1:PAR1:DEF R')
     inst.write(':CALC1:PAR2:DEF X')
     if cfg.segments is not None:
@@ -345,11 +366,13 @@ def configure_sweep_parameters(inst, cfg):
 
 
 def configure_osc_voltage(inst, volt):
+    """Configure voltage of oscillator."""
     inst.write(':SOUR1:MODE VOLT')
     inst.write(f':SOUR1:VOLT {volt}')
 
 
 def run_fixture_compensation(inst, cfg):
+    """Execute the fixture compensation procedure."""
     inst.write(':SYST:PRES')
     configure_sweep_parameters(inst, cfg)
     inst.write(':SENS1:CORR:COLL:FPO USER')
@@ -367,6 +390,7 @@ def run_fixture_compensation(inst, cfg):
 
 
 def get_program_version():
+    """Get the program version metadata from Git."""
     r = subprocess.run('git describe --tags --always',
                        stdout=subprocess.PIPE, shell=True)
     tag_or_hash = r.stdout.strip().decode()
@@ -387,6 +411,7 @@ class _ConfigFilenameAction(argparse.Action):
 
 
 def parse_args():
+    """Parse command line arguments."""
     default = default_filename(time_now)
     parser = argparse.ArgumentParser(
         description="Keysight E4990A acquisition script")
@@ -412,8 +437,8 @@ def parse_args():
         else:
             filename = input(f"Enter a filepath or press [ENTER] to accept "
                              f"the default ({default}.mat):") or default
-        if not filename.endswith(fileext):
-            filename += fileext
+        if not filename.endswith(FILE_EXT):
+            filename += FILE_EXT
         if os.path.exists(filename):
             resp = input(f"File {filename} exists. Are you sure you want "
                          f"to overwrite it (y/n)?")
@@ -422,15 +447,23 @@ def parse_args():
     return filename, args
 
 
-if __name__ == '__main__':
-    time_now = datetime.datetime.now().isoformat()
-    program_version = get_program_version()
+def main():
+    """Parse command line arguments, execute the acquisition and
+    handle errors.
+    """
     filename, args = parse_args()
     try:
-        main(filename, args.config_filename, args.fixture_compensation)
+        acquire(filename, args.config_filename, args.fixture_compensation)
     except Exception as e:
         if args.debug:
             traceback.print_exc()
         else:
             print(f"\nERROR: {e}")
         sys.exit(1)
+
+
+if __name__ == '__main__':
+    # Initialize variables that have global scope.
+    time_now = datetime.datetime.now().isoformat()
+    program_version = get_program_version()
+    main()
