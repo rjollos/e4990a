@@ -63,17 +63,22 @@ def acquire(filename, config_filename, fixture_compensation):
     cfg = read_config(config_filename)
     rm = visa.ResourceManager()
     print(rm.visalib)
-    resources = rm.list_resources('USB?*INSTR')
-    if not resources:
-        raise E4990AError("No USB instruments found")
-    if len(resources) > 1:
-        msg = "Multiple USB instruments found:\n"
-        for r in resources:
-            msg += ('\t' + r)
-        raise E4990AError(msg)
+    if cfg.ip_address:
+        resource_name = f'TCPIP::{cfg.ip_address}::INSTR'
+    else:
+        resources = rm.list_resources('USB?*INSTR')
+        if not resources:
+            raise E4990AError("No USB instruments found")
+        if len(resources) > 1:
+            msg = "Multiple USB instruments found:\n"
+            for r in resources:
+                msg += ('\t' + r)
+            raise E4990AError(msg)
+        resource_name = resources[0]
 
+    print(f"Opening resource: {resource_name}")
     try:
-        inst = rm.open_resource(resources[0])
+        inst = rm.open_resource(resource_name)
     except pyvisa.errors.VisaIOError as e:
         raise E4990AError(f"{e}")
     # Timeout must be longer than sweep interval.
@@ -99,6 +104,7 @@ def read_config(config_filename):
     parser = configparser.ConfigParser()
 
     ConfigBase = collections.namedtuple('ConfigBase', [
+        'ip_address',
         'start_frequency',
         'stop_frequency',
         'number_of_points',
@@ -117,6 +123,8 @@ def read_config(config_filename):
         def print(self):
             """Print the configuration parameters."""
             print("Acquisition parameters:")
+            if self.ip_address is not None:
+                print(f"\tIP address: {self.ip_address}")
             if self.start_frequency is not None:
                 print(f"\tStart frequency: {self.start_frequency / 1e3:.3e} kHz")
             if self.stop_frequency is not None:
@@ -137,6 +145,7 @@ def read_config(config_filename):
     parser.read(config_filename)
     sweep_section = parser['sweep']
     cfg = Configuration(
+        parser.get('resource', 'ip_address', fallback=None),
         to_int(sweep_section.getfloat('start_frequency')),
         to_int(sweep_section.getfloat('stop_frequency')),
         sweep_section.getint('number_of_points'),
