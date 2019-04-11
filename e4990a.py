@@ -226,6 +226,18 @@ def run_sweep(inst, filename, cfg):
     inst.write(':INIT1:CONT ON')
     inst.write(':TRIG:SOUR BUS')
 
+    # Configure DC Bias current and voltage measurement
+    if cfg.bias_voltage != 0:
+        inst.write(":SENS1:DC:MEAS:ENAB ON")
+        bias_current_measurement = numpy.zeros((1, cfg.number_of_intervals),
+                                               dtype=numpy.float32)
+        bias_voltage_measurement = numpy.zeros((1, cfg.number_of_intervals),
+                                               dtype=numpy.float32)
+    else:
+        inst.write(":SENS1:DC:MEAS:ENAB OFF")
+        bias_current_measurement = numpy.empty(0, dtype=numpy.float32)
+        bias_voltage_measurement = numpy.empty(0, dtype=numpy.float32)
+
     ydims = number_of_points, cfg.number_of_intervals
     yx = numpy.zeros(ydims, dtype=numpy.float32)
     yr = numpy.zeros(ydims, dtype=numpy.float32)
@@ -233,6 +245,10 @@ def run_sweep(inst, filename, cfg):
         pyy = PlotYY(x)
     start_time = time.time()
     for i in range(0, cfg.number_of_intervals):
+        # Clear DC Bias measurement data
+        if cfg.bias_voltage != 0:
+            inst.write(":SENS1:DC:MEAS:CLE")
+
         acq_start_time = time.time()
         inst.write(':TRIG:SING')
         inst.query('*OPC?')
@@ -245,6 +261,13 @@ def run_sweep(inst, filename, cfg):
         y = query(':CALC1:DATA:RDAT?')
         yx[:,i] = y[::2]
         yr[:,i] = y[1::2]
+
+        # Get DC Bias current and voltage measurement
+        if cfg.bias_voltage != 0:
+            bias_current_measurement[0,i] = \
+                inst.query(":SENS1:DC:MEAS:DATA:DCI?")
+            bias_voltage_measurement[0,i] = \
+                inst.query(":SENS1:DC:MEAS:DATA:DCV?")
 
         if cfg.plotting_enabled:
             rlev1 = to_int(inst.query(':DISP:WIND1:TRAC1:Y:RLEV?'))
@@ -270,6 +293,8 @@ def run_sweep(inst, filename, cfg):
         'idn': idn,
         'acqProgramVersion': program_version,
         'biasVoltage': cfg.bias_voltage,
+        'biasCurrentMeasurement': bias_current_measurement,
+        'biasVoltageMeasurement': bias_voltage_measurement,
         'oscillatorVoltage': cfg.oscillator_voltage,
         'measurementSpeed': cfg.measurement_speed,
         'numberOfSweepAverages': cfg.number_of_sweep_averages,
