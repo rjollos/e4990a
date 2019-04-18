@@ -7,7 +7,7 @@ import configparser
 import datetime
 import functools
 import numbers
-import os
+import pathlib
 import subprocess
 import sys
 import time
@@ -438,7 +438,7 @@ class _ConfigFilenameAction(argparse.Action):
 
     def __call__(self, parser, namespace, values, option_string=None):
         config_filename = values
-        if not os.path.exists(config_filename):
+        if not pathlib.Path(config_filename).exists():
             raise argparse.ArgumentError(
                 self, f"Config file '{config_filename}' not found")
         setattr(namespace, self.dest, config_filename)
@@ -473,7 +473,7 @@ def parse_args():
                              f"the default ({default}.mat):") or default
         if not filename.endswith(FILE_EXT):
             filename += FILE_EXT
-        if os.path.exists(filename):
+        if pathlib.Path(filename).exists():
             resp = input(f"File {filename} exists. Are you sure you want "
                          f"to overwrite it (y/n)?")
             if resp.lower() != 'y':
