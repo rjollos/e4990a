@@ -8,6 +8,7 @@ import datetime
 import functools
 import numbers
 import pathlib
+import shutil
 import subprocess
 import sys
 import time
@@ -20,6 +21,7 @@ import scipy.io as scio
 import visa
 
 FILE_EXT = '.mat'
+CONFIG_FILENAME_DEFAULT = 'e4990a.ini'
 program_version = None
 time_now = None
 
@@ -60,6 +62,12 @@ def acquire(filename, config_filename, fixture_compensation):
     """Read the configuration file, initiate communication with the
     instrument and execute the sweep or fixture compensation.
     """
+    # Create default INI file if it doesn't exist
+    if config_filename == CONFIG_FILENAME_DEFAULT and \
+            not pathlib.Path(config_filename).exists():
+        print(f"Default config file \"{CONFIG_FILENAME_DEFAULT}\" doesn't "
+              "exist. Creating it from template.")
+        shutil.copyfile('template.ini', 'e4990a.ini')
     cfg = read_config(config_filename)
     rm = visa.ResourceManager()
     print(rm.visalib)
@@ -450,10 +458,11 @@ def parse_args():
     parser = argparse.ArgumentParser(
         description="Keysight E4990A acquisition script")
     parser.add_argument('filename', nargs='?')
-    parser.add_argument('--config', default='e4990a.ini',
+    parser.add_argument('--config', default=CONFIG_FILENAME_DEFAULT,
                         dest='config_filename',
                         action=_ConfigFilenameAction,
-                        help="INI config filename (default: e4990.ini)")
+                        help="INI config filename "
+                             "(default: {CONFIG_FILENAME_DEFAULT}")
     parser.add_argument('-d', '--default-filename', action='store_true',
                         dest='use_default_filename',
                         help="Use default filename for saving data")
