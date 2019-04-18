@@ -296,6 +296,8 @@ def run_sweep(inst, filename, cfg):
             time.sleep(sleep_time)
 
     x.shape = x.shape[0], 1  # Force shape to be N x 1
+    if not filename.parent.exists():
+        filename.parent.mkdir()
     scio.savemat(filename, {
         'time': time_now,
         'idn': idn,
@@ -316,7 +318,7 @@ def run_sweep(inst, filename, cfg):
         'X': yr,
         'R': yx,
     })
-    print(f"Data saved to {filename}")
+    print(f"Data saved to \"{filename}\"")
 
 
 def default_filename(now=None):
@@ -482,7 +484,8 @@ def parse_args():
                              f"the default ({default}.mat):") or default
         if not filename.endswith(FILE_EXT):
             filename += FILE_EXT
-        if pathlib.Path(filename).exists():
+        filename = pathlib.Path(filename)
+        if filename.exists():
             resp = input(f"File {filename} exists. Are you sure you want "
                          f"to overwrite it (y/n)?")
             if resp.lower() != 'y':
