@@ -231,9 +231,6 @@ def run_sweep(inst, filename, cfg):
         inst.write(f':SOUR1:BIAS:VOLT {cfg.bias_voltage}')
         inst.write(':SOUR:BIAS:STAT ON')
 
-    inst.write(':INIT1:CONT ON')
-    inst.write(':TRIG:SOUR BUS')
-
     # Configure DC Bias current and voltage measurement
     if cfg.bias_voltage != 0:
         inst.write(":SENS1:DC:MEAS:ENAB ON")
@@ -374,6 +371,8 @@ class PlotYY:
 
 def configure_sweep_parameters(inst, cfg):
     """Configure instrument with specified sweep parameters."""
+    inst.write(':INIT1:CONT ON')
+    inst.write(':TRIG:SOUR BUS')
     inst.write(':CALC1:PAR1:DEF R')
     inst.write(':CALC1:PAR2:DEF X')
     if cfg.segments is not None:
