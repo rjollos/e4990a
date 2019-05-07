@@ -1,0 +1,5 @@
+# E4990A Change Log
+
+## 2.2 (2019-05-07)
+* Added option -a/--append-datetime for appending an ISO 8601 timestamp
+  to the filename.

@@ -464,6 +464,9 @@ def parse_args():
                         action=_ConfigFilenameAction,
                         help="INI config filename "
                              "(default: {CONFIG_FILENAME_DEFAULT}")
+    parser.add_argument('-a', '--append-datetime', action='store_true',
+                        dest='append_datetime',
+                        help="Append ISO 8601 datetime to filename")
     parser.add_argument('-d', '--default-filename', action='store_true',
                         dest='use_default_filename',
                         help="Use default filename for saving data")
@@ -481,6 +484,11 @@ def parse_args():
         else:
             filename = input(f"Enter a filepath or press [ENTER] to accept "
                              f"the default ({default}.mat):") or default
+        if args.append_datetime and not args.use_default_filename:
+            # Remove extension, it will get added back.
+            if filename.endswith(FILE_EXT):
+                filename = filename.rsplit(FILE_EXT)[0]
+            filename += ('-' + default)
         if not filename.endswith(FILE_EXT):
             filename += FILE_EXT
         filename = pathlib.Path(filename)
