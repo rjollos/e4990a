@@ -463,17 +463,17 @@ def parse_args():
                         dest='config_filename',
                         action=_ConfigFilenameAction,
                         help="INI config filename "
-                             "(default: {CONFIG_FILENAME_DEFAULT}")
+                             f"(default: {CONFIG_FILENAME_DEFAULT})")
     parser.add_argument('-a', '--append-datetime', action='store_true',
                         dest='append_datetime',
                         help="Append ISO 8601 datetime to filename")
     parser.add_argument('-d', '--default-filename', action='store_true',
                         dest='use_default_filename',
-                        help="Use default filename for saving data")
+                        help="Use default filename (ISO 8601 datetime)")
     parser.add_argument('--debug', action='store_true',
                         help="Print tracebacks for debugging")
     parser.add_argument('-c', '--fixture-compensation', action='store_true',
-                        help="Execute fixture fixture_compensation procedure")
+                        help="Execute fixture compensation procedure")
     args = parser.parse_args()
     filename = None
     if not args.fixture_compensation:
