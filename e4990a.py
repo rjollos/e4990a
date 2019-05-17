@@ -99,7 +99,8 @@ def acquire(filename, config_filename, fixture_compensation):
                 run_sweep(inst, filename, cfg)
             finally:
                 inst.write(':SOUR:BIAS:STAT OFF')
-            input("Press [ENTER] to exit\n")
+            if cfg.plotting_enabled:
+                input("Press [ENTER] to exit\n")
     finally:
         inst.close()
         rm.close()
