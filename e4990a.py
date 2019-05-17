@@ -244,6 +244,9 @@ def run_sweep(inst, filename, cfg):
         bias_current_measurement = numpy.empty(0, dtype=numpy.float32)
         bias_voltage_measurement = numpy.empty(0, dtype=numpy.float32)
 
+    # Show marker at peak of trace
+    inst.write(':CALC1:MARK1:FUNC:TYPE PEAK')
+
     ydims = number_of_points, cfg.number_of_intervals
     yx = numpy.zeros(ydims, dtype=numpy.float32)
     yr = numpy.zeros(ydims, dtype=numpy.float32)
@@ -263,6 +266,9 @@ def run_sweep(inst, filename, cfg):
 
         inst.write(':DISP:WIND1:TRAC1:Y:AUTO')
         inst.write(':DISP:WIND1:TRAC2:Y:AUTO')
+
+        # Execute marker search
+        inst.write(':CALC1:MARK1:FUNC:EXEC')
 
         y = query(':CALC1:DATA:RDAT?')
         yx[:,i] = y[::2]

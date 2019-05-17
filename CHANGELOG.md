@@ -6,3 +6,4 @@
 
 ## 2.3 (not yet released)
 * Only prompt to exit if plotting enabled
+* Add marker at peak of channel 1 trace
