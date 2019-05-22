@@ -245,6 +245,7 @@ def run_sweep(inst, filename, cfg):
         bias_voltage_measurement = numpy.empty(0, dtype=numpy.float32)
 
     # Show marker at peak of trace
+    inst.write(':CALC1:MARK1 ON')
     inst.write(':CALC1:MARK1:FUNC:TYPE PEAK')
 
     ydims = number_of_points, cfg.number_of_intervals
