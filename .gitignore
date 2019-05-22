@@ -110,3 +110,4 @@ venv.bak/
 *.swp
 *.mat
 *~
+*.ini
