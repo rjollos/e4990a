@@ -395,6 +395,7 @@ def configure_sweep_parameters(inst, cfg):
             raise E4990AError("Number of points in segments definition does "
                               "not match the number of points to be acquired "
                               "in the segment sweep.")
+        inst.write(':DISP:WIND1:X:SPAC LIN')
     else:
         inst.write(':SENS1:SWE:TYPE LIN')
         inst.write(f':SENS1:FREQ:START {cfg.start_frequency}')
