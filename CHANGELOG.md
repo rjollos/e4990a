@@ -7,3 +7,6 @@
 ## 2.3 (2019-05-22)
 * Only prompt to exit if plotting enabled
 * Add marker at peak of channel 1 trace
+
+## 2.4 (not yet released)
+* Added batch file to simplify execution.
