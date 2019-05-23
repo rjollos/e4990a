@@ -40,7 +40,7 @@ def to_number(f, s):
     if isinstance(s, numbers.Number):
         return f(float(s))
     if ',' in s:  # comma-separated values
-        return [f(float(f.strip())) for f in s.strip().split(',')]
+        return [f(float(i.strip())) for i in s.strip().split(',')]
     return f(float(s.strip()))
 
 
