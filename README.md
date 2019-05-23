@@ -8,13 +8,7 @@ The [PyVISA](https://pyvisa.readthedocs.io) library is used to communicate with 
 
 1. Install the [Keysight IO Libraries Suite](https://www.keysight.com/en/pd-1985909/io-libraries-suite).
 1. Install [Python](https://www.python.org/downloads/windows/) to `C:\Python37`.
-1. Open Command Prompt and create a Python environment.
-    ```
-    > C:\Python37\python.exe -m venv venv
-    > venv\Scripts\activate.bat
-    > python -m pip install -U pip
-    > python -m pip install -r requirements.txt
-    ```
+1. Run the `install` script.
 
 ## Execution
 

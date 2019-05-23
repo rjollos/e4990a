@@ -10,3 +10,4 @@
 
 ## 2.4 (not yet released)
 * Added batch file to simplify execution.
+* Added batch file to simplify installation.
