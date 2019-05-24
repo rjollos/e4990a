@@ -20,3 +20,4 @@
 
 ## 2.6 (Not Yet Released)
 * Install creates README.html from README.md.
+* Added MATLAB function for plotting impedance data.
