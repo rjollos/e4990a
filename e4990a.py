@@ -261,7 +261,7 @@ def run_sweep(inst, filename, cfg):
 
         acq_start_time = time.time()
         inst.write(':TRIG:SING')
-        inst.write('*WAI')
+        inst.query('*OPC?')
         acq_end_time = time.time() - acq_start_time
         print(f"Acquisition time is {acq_end_time:.2f} s")
 

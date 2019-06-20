@@ -13,3 +13,6 @@
 * Added batch file to simplify installation.
 * Fixed parsing of segments from ini file.
 * Segmented sweep display window has linear frequency scale.
+
+## 2.5 (2019-06-20)
+* Fix incorrect reporting of acquisition time.
