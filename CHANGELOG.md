@@ -16,3 +16,4 @@
 
 ## 2.5 (2019-06-20)
 * Fix incorrect reporting of acquisition time.
+* Report acquisition time in ms rather than s.

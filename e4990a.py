@@ -259,11 +259,11 @@ def run_sweep(inst, filename, cfg):
         if cfg.bias_voltage != 0:
             inst.write(':SENS1:DC:MEAS:CLE')
 
-        acq_start_time = time.time()
+        acq_start_time = time.perf_counter()
         inst.write(':TRIG:SING')
         inst.query('*OPC?')
-        acq_end_time = time.time() - acq_start_time
-        print(f"Acquisition time is {acq_end_time:.2f} s")
+        acq_end_time = (time.perf_counter() - acq_start_time) * 1e3
+        print(f"Acquisition time is {acq_end_time:.0f} ms")
 
         inst.write(':DISP:WIND1:TRAC1:Y:AUTO')
         inst.write(':DISP:WIND1:TRAC2:Y:AUTO')
