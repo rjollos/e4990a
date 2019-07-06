@@ -28,9 +28,26 @@ The [PyVISA](https://pyvisa.readthedocs.io) library is used to communicate with 
     Enter a filepath or press [ENTER] to accept the default (20181020T182322.mat):
     ```
 
+## Options
+
 The configuration file can be specified using the `--config` parameter:
 ```
 > e4990a --config=e4990a-2.ini
+```
+
+Data files can be output to a directory:
+```
+> e4990a 20190705/DeviceA7
+```
+* The directory will be created if it does not exist.
+* The forward slash must be used as the path separator.
+* The extension `.mat` is appended if not specified.
+
+A timestamp can be appended to the given filename using the `-a` parameter:
+```
+> e4990a -a 20190705/DeviceA7
+...
+Data saved to "20190705\DeviceA7-20190705T213856.mat"
 ```
 
 View the script documentation:
