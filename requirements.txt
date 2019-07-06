@@ -2,4 +2,5 @@ PyVISA-py
 PyVISA
 matplotlib
 scipy
+py-gfm
 

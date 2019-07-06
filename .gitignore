@@ -106,8 +106,10 @@ venv.bak/
 # Editors
 .vscode
 
-# Temp files and mat files
+# Temp files and generated files
 *.swp
 *.mat
 *~
 *.ini
+README.html
+
