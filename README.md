@@ -8,7 +8,9 @@ The [PyVISA](https://pyvisa.readthedocs.io) library is used to communicate with 
 
 1. Install the [Keysight IO Libraries Suite](https://www.keysight.com/en/pd-1985909/io-libraries-suite).
 1. Install [Python](https://www.python.org/downloads/windows/) to `C:\Python37`.
+1. Clone this repository.
 1. Run the `install` script.
+
 
 ## Execution
 
@@ -54,6 +56,13 @@ View the script documentation:
 ```
 > e4990a -h
 ```
+
+## Reading Data
+
+The MATLAB function `read_e4990a_data.m` reads the MAT file and returns
+a structure. The numeric fields of the structure, which are stored in the
+MAT file using their intrinsic types, are cast to type `double` for
+convenience of working with the data in MATLAB.
 
 ## Tested With
 
