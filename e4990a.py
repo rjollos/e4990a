@@ -193,7 +193,7 @@ def run_sweep(inst, filename, cfg):
 
     fixture = inst.query(':SENS:FIXT:SEL?').strip()
     print(f"Fixture: {fixture}")
-    print("Calibration status:")
+    print("Fixture compensation status:")
     open_cmp_status = to_int(inst.query(':SENS1:CORR2:OPEN?'))
     print(f"\tOpen fixture compensation: {print_status(open_cmp_status)}")
     short_cmp_status = to_int(inst.query(':SENS1:CORR2:SHOR?'))
@@ -206,8 +206,9 @@ def run_sweep(inst, filename, cfg):
 
     x = query(':SENS1:FREQ:DATA?')
 
-    # Check that calibration is valid for the sweep frequency range.
-    # Assume that frequencies for short calibration are the same.
+    # Check that compensation is valid for the sweep frequency range.
+    # Check the frequencies for the open compensation and assume that
+    # frequencies for the short compensation are the same.
     fix_cmp_frequencies = query(':SENS1:CORR2:ZME:OPEN:FREQ?')
     fix_cmp_number_of_points = to_int(inst.query(':SENS1:CORR2:ZME:OPEN:POIN?'))
     if number_of_points != fix_cmp_number_of_points or \
@@ -428,7 +429,8 @@ def run_fixture_compensation(inst, cfg):
     inst.write(':SYST:PRES')
     configure_sweep_parameters(inst, cfg)
     inst.write(':SENS1:CORR:COLL:FPO USER')
-    # Per manual, oscillator voltage should be 500 mV during compensation.
+    # Per manual (https://bit.ly/2Llu3lW), oscillator voltage should be
+    # 500 mV during short correction.
     configure_osc_voltage(inst, 0.5)
     print("Starting fixture compensation procedure")
     input("Put the test fixture's device contacts in the OPEN state "
