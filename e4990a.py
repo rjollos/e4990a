@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 """Acquisition script for Keysight E4990A."""
 
 import argparse
