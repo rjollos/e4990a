@@ -57,6 +57,27 @@ View the script documentation:
 > e4990a -h
 ```
 
+## INI File
+
+Uniform sampling is supported with the following options:
+```
+start_frequency = 500e3
+stop_frequency = 5e6
+number_of_points = 401
+```
+Start and stop frequency are specified in Hz.
+
+Segmented sampling is supported by specifying a single option:
+```
+segments = 500e3,1400e3,19,1410e3,2400e3,100,2500e3,5000e3,26
+```
+Each triplet specifies a single segment: start frequency, stop
+frequency, number of points (e.g. 500e3,1400e3,19). Any number
+of segments can be specified.
+
+An error will occur if the options for both uniform and segmented
+sampling are specified in the INI file.
+
 ## Reading Data
 
 The MATLAB function `read_e4990a_data.m` reads the MAT file and returns
