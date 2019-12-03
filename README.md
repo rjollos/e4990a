@@ -7,7 +7,9 @@ The [PyVISA](https://pyvisa.readthedocs.io) library is used to communicate with 
 ## Installation
 
 1. Install the [Keysight IO Libraries Suite](https://www.keysight.com/en/pd-1985909/io-libraries-suite).
-1. Install [Python](https://www.python.org/downloads/windows/) to `C:\Python37`.
+1. Install [Python](https://www.python.org/downloads/windows/):
+    * Windows: Install to `C:\Python38`.
+    * OSX: Execute `./install_python.sh`
 1. Clone this repository.
 1. Run the `install` script.
 
@@ -87,8 +89,8 @@ convenience of working with the data in MATLAB.
 
 ## Tested With
 
-* Windows 10
-* Python 3.7.1 x86-64
+* Windows 10 and OSX 10.15
+* Python 3.8.0 x86-64
 * Keysight IO Libraries Suite 18.1
 
 ## TODO
