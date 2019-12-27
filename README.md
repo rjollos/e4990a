@@ -16,6 +16,8 @@ The [PyVISA](https://pyvisa.readthedocs.io) library is used to communicate with 
 
 ## Execution
 
+On OSX, replace `e4990a` with `./e4990a.sh` in the commands below.
+
 1. Set the capture parameters in `e4990a.ini`.
 1. Execute the fixture compensation procedure.
     ```
