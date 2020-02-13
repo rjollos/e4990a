@@ -11,13 +11,13 @@ if nargin == 1
     printFigure = varargin{1};
 end
 
-filenames = uigetfile('*.mat', 'MultiSelect', 'on');
+[filenames, path] = uigetfile('*.mat', 'MultiSelect', 'on');
 if ischar(filenames)
     filenames = {filenames};
 end
 
 for i = 1:length(filenames)
-    d(i) = read_e4990a_data(filenames{i});
+    d(i) = read_e4990a_data(fullfile(path, filenames{i}));
     figure;
     [ha, hl1, hl2] = plotyy(d(i).Frequency, d(i).R, d(i).Frequency, d(i).X);
     [rp, ri] = max(d(i).R);
@@ -38,7 +38,7 @@ for i = 1:length(filenames)
     [~, fname] = fileparts(filenames{i});
     title(ha(1), sprintf('Filename %s, Bias = %0.1f', fname, d(i).biasVoltage));
     if printFigure
-        print('-djpeg100', fname)
+        print('-djpeg100', fullfile(path, fname))
     end
     ylabel(ha(1), 'R (\Omega)', 'Interpreter', 'tex', 'FontSize', 14)
     ylabel(ha(2), 'X (\Omega)', 'Interpreter', 'tex', 'FontSize', 14)
