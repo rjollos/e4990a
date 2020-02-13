@@ -1,4 +1,5 @@
-PyVISA-py
+git+https://github.com/pyvisa/pyvisa-py.git
+#PyVISA-py
 PyVISA
 matplotlib
 scipy
