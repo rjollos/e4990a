@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-PYVER=3.8.0
+PYVER=3.8.1
 VIRTUALENV=e4990a
 
 brew install pyenv pyenv-virtualenv tcl-tk 2>/dev/null
@@ -17,6 +17,6 @@ if [ -z $(pyenv versions --bare | grep "^$VIRTUALENV$") ]; then
 fi
 eval "$(pyenv init -)" && pyenv shell $VIRTUALENV
 
-pip install -U pip
+pip install -U pip wheel
 pip install -r requirements.txt
 python -m markdown -x gfm README.md > README.html

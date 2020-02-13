@@ -13,6 +13,13 @@ The [PyVISA](https://pyvisa.readthedocs.io) library is used to communicate with 
 1. Clone this repository.
 1. Run the `install` script.
 
+On OSX the Python version installed in pyenv must be built with tcl-tk
+support:
+```
+PYTHON_CONFIGURE_OPTS="--with-tcltk-includes='-I$(brew --prefix tcl-tk)/include' \
+--with-tcltk-libs='-L$(brew --prefix tcl-tk)/lib -ltcl8.6 -ltk8.6'" \
+pyenv install $PYENV
+```
 
 ## Execution
 
