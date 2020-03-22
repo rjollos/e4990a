@@ -6,7 +6,7 @@
 
 ## 2.3 (2019-05-22)
 * Only prompt to exit if plotting enabled
-* Add marker at peak of channel 1 trace
+* Added marker at peak of channel 1 trace
 
 ## 2.4 (2019-05-23)
 * Added batch file to simplify execution.
@@ -15,9 +15,12 @@
 * Segmented sweep display window has linear frequency scale.
 
 ## 2.5 (2019-06-20)
-* Fix incorrect reporting of acquisition time.
+* Fixed incorrect reporting of acquisition time.
 * Report acquisition time in ms rather than s.
 
 ## 2.6 (Not Yet Released)
 * Install creates README.html from README.md.
 * Added MATLAB function for plotting impedance data.
+* Added install and execution scripts for OSX.
+* Fixed poor performance and timeout over TCP/IP.
+* Added build of executable using PyInstaller.

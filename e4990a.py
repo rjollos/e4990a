@@ -24,6 +24,7 @@ FILE_EXT = '.mat'
 CONFIG_FILENAME_DEFAULT = 'e4990a.ini'
 program_version = None
 time_now = None
+__version__ = '2.6'
 
 
 class E4990AError(Exception):
@@ -58,16 +59,19 @@ def to_float(s, precision=None):
     return to_number(f, s)
 
 
+def resource_path(file_name):
+    """Resolve filename within the PyInstaller executable."""
+    try:
+        base_path = pathlib.Path(sys._MEIPASS)
+    except AttributeError:
+        base_path = pathlib.Path('.').resolve()
+    return base_path.joinpath(file_name)
+
+
 def acquire(filename, config_filename, fixture_compensation):
     """Read the configuration file, initiate communication with the
     instrument and execute the sweep or fixture compensation.
     """
-    # Create default INI file if it doesn't exist
-    if config_filename == CONFIG_FILENAME_DEFAULT and \
-            not pathlib.Path(config_filename).exists():
-        print(f"Default config file \"{CONFIG_FILENAME_DEFAULT}\" doesn't "
-              "exist. Creating it from template.")
-        shutil.copyfile('template.ini', 'e4990a.ini')
     cfg = read_config(config_filename)
     rm = visa.ResourceManager()
     print(rm.visalib)
@@ -490,6 +494,14 @@ def parse_args():
     parser.add_argument('-c', '--fixture-compensation', action='store_true',
                         help="Execute fixture compensation procedure")
     args = parser.parse_args()
+    # Create default INI file if it doesn't exist
+    if args.config_filename == CONFIG_FILENAME_DEFAULT and \
+            not pathlib.Path(args.config_filename).exists():
+        print(f"Default config file \"{CONFIG_FILENAME_DEFAULT}\" doesn't "
+              "exist. Creating it from template and exiting.")
+        template_ini = resource_path('template.ini')
+        shutil.copyfile(template_ini, 'e4990a.ini')
+        sys.exit(0)
     filename = None
     if not args.fixture_compensation:
         if args.filename:

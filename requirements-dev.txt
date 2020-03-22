@@ -1,3 +1,4 @@
 bpython
-rope
+pyinstaller
 pylint
+rope
