@@ -129,6 +129,8 @@ def read_config(config_filename):
     ])
 
     class Configuration(ConfigBase):
+        """Named tuple of configuration parameters."""
+
         def print(self):
             """Print the configuration parameters."""
             print("Acquisition parameters:")
@@ -445,13 +447,15 @@ def run_fixture_compensation(inst, cfg):
 
 def get_program_version():
     """Get the program version metadata from Git."""
-    r = subprocess.run('git describe --tags --always',
-                       stdout=subprocess.PIPE, shell=True)
-    tag_or_hash = r.stdout.strip().decode()
-    r = subprocess.run('git diff --stat',
-                       stdout=subprocess.PIPE, shell=True)
-    is_dirty = r.stdout.strip().decode() != ''
-    return tag_or_hash + ' (dirty)' if is_dirty else ''
+    if pathlib.Path('.git').is_dir():
+        r = subprocess.run('git describe --tags --always',
+                           stdout=subprocess.PIPE, check=True, shell=True)
+        tag_or_hash = r.stdout.strip().decode()
+        r = subprocess.run('git diff --stat',
+                           stdout=subprocess.PIPE, check=True, shell=True)
+        is_dirty = r.stdout.strip().decode() != ''
+        return tag_or_hash + ' (dirty)' if is_dirty else ''
+    return __version__
 
 
 class _ConfigFilenameAction(argparse.Action):
@@ -518,7 +522,7 @@ def main():
     filename, args = parse_args()
     try:
         acquire(filename, args.config_filename, args.fixture_compensation)
-    except Exception as e:
+    except Exception as e:  #pylint: disable=W0703
         if args.debug:
             traceback.print_exc()
         else:
