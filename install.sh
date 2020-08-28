@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-PYVER=3.8.2
+PYVER=3.8.4
 VIRTUALENV=e4990a
 
 brew install pyenv pyenv-virtualenv tcl-tk 2>/dev/null

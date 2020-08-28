@@ -2,5 +2,5 @@ PyVISA-py
 PyVISA
 matplotlib
 scipy
-py-gfm
+py-gfm<1.0  # https://github.com/Zopieux/py-gfm/issues/21
 
