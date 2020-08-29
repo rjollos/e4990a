@@ -1,5 +1,6 @@
 @echo off
 
+rmdir /s /q build dist
 %~dp0venv\Scripts\pyinstaller.exe --noconfirm ^
 	--onefile ^
 	--hidden-import="pyvisa-py" ^

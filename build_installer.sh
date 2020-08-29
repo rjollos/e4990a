@@ -1,5 +1,6 @@
 #!/usr/bin/env sh
 
+rm -rf build dist
 pyinstaller --noconfirm \
 	--onefile \
 	--hidden-import='pyvisa-py' \
