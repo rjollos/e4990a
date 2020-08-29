@@ -24,4 +24,4 @@ eval "$(pyenv init -)" && pyenv shell $VIRTUALENV
 pip install -U pip setuptools wheel
 pip install -Ur requirements.txt
 pip install -Ur requirements-dev.txt
-python -m markdown -x gfm README.md > README.html
+python -m markdown -x mdx_gfm README.md > README.html

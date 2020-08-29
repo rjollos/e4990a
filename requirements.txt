@@ -2,5 +2,5 @@ PyVISA-py
 PyVISA
 matplotlib<3.3  # https://github.com/pyinstaller/pyinstaller/issues/5004
 scipy
-py-gfm<1.0  # https://github.com/Zopieux/py-gfm/issues/21
+py-gfm
 
