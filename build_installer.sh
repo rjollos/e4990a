@@ -1,7 +1,7 @@
 #!/usr/bin/env sh
 
-rm -rf build dist
-pyinstaller --noconfirm \
+pyinstaller --clean \
+	--noconfirm \
 	--onefile \
 	--hidden-import='pyvisa-py' \
 	--hidden-import='pkg_resources.py2_warn' \
