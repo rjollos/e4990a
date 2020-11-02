@@ -1,4 +1,5 @@
 bpython
-pyinstaller
+#pyinstaller
+https://github.com/pyinstaller/pyinstaller/archive/develop.zip
 pylint
 rope

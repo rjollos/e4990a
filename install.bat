@@ -1,7 +1,7 @@
 @echo off
 
 set venv=%~dp0venv
-C:\Python38\python.exe -m venv "%venv%"
+C:\Python39\python.exe -m venv "%venv%"
 set python=%venv%\Scripts\python.exe
 "%python%" -m pip install -U pip
 "%python%" -m pip install -r requirements.txt
