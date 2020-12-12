@@ -2,5 +2,4 @@ PyVISA-py
 PyVISA
 matplotlib<3.3  # https://github.com/pyinstaller/pyinstaller/issues/5004
 scipy
-py-gfm
-
+markdown
