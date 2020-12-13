@@ -121,6 +121,13 @@ The configuration of `pylint` is in `.pylintrc`.
 * Windows 10 and OSX 10.15
 * Python 3.8.2 x86-64
 
+## Dependencies
+* [PyVISA-py](https://pypi.org/project/PyVISA-py)
+* [PyVISA](https://pypi.org/project/PyVISA)
+* [matplotlib](https://pypi.org/project/matplotlib)
+* [scipy](https://pypi.org/project/scipy)
+* [Markdown](https://pypi.org/project/Markdown)
+
 ## References
 
 * [Keysight E4990A impedance analyzer](https://www.keysight.com/en/pd-2405177-pn-E4990A/impedance-analyzer-20-hz-to-10-20-30-50-120-mhz)
