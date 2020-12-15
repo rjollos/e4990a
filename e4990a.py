@@ -18,7 +18,6 @@ import matplotlib.pyplot as pyplot
 import numpy
 import pyvisa
 import scipy.io as scio
-import visa
 
 FILE_EXT = '.mat'
 CONFIG_FILENAME_DEFAULT = 'e4990a.ini'
@@ -73,7 +72,7 @@ def acquire(filename, config_filename, fixture_compensation):
     instrument and execute the sweep or fixture compensation.
     """
     cfg = read_config(config_filename)
-    rm = visa.ResourceManager()
+    rm = pyvisa.ResourceManager()
     print(rm.visalib)
     if cfg.ip_address:
         resource_name = f'TCPIP::{cfg.ip_address}::INSTR'
