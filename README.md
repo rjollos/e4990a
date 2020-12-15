@@ -127,6 +127,7 @@ The configuration of `pylint` is in `.pylintrc`.
 * [matplotlib](https://pypi.org/project/matplotlib)
 * [scipy](https://pypi.org/project/scipy)
 * [Markdown](https://pypi.org/project/Markdown)
+* [pyinstaller](https://pypi.org/project/pyinstaller)
 
 ## References
 
