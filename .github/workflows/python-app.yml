@@ -1,7 +1,4 @@
-# This workflow will install Python dependencies, run tests and lint with a single version of Python
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
-
-name: Python application
+name: Build e4990a executables
 
 on:
   push:
@@ -11,12 +8,15 @@ on:
 
 jobs:
   build:
+    strategy:
+      matrix:
+        os: ['macos-latest', 'windows-latest']
 
-    runs-on: macos-latest
+    runs-on: ${{ matrix.os }}
 
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python 3.9
+    - name: Set up Python
       uses: actions/setup-python@v2
       with:
         python-version: 3.9
@@ -28,13 +28,19 @@ jobs:
     - name: Create README
       run: |
         python -m markdown -x extra README.md > README.html
-    - name: Build executable
+    - name: Build executable (macos)
+      if: matrix.os == 'macos-latest'
       run: |
-        sh ./build_installer.sh
+        ./build_installer.sh
+    - name: Build executable (windows)
+      if: matrix.os == 'windows-latest'
+      shell: cmd
+      run: |
+        .\build_installer.bat
     - name: Create distributable
       run: |
-        sh ./distribute.sh
+        ./distribute.sh
     - uses: actions/upload-artifact@v2
       with:
-        name: e4990a-macos
+        name: e4990a
         path: dist/*
