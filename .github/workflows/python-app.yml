@@ -26,6 +26,7 @@ jobs:
         python -m pip install -Ur requirements.txt
         python -m pip install -Ur requirements-dev.txt
     - name: Create README
+      if: matrix.os == 'macos-latest'
       run: |
         python -m markdown -x extra README.md > README.html
     - name: Build executable (macos)
