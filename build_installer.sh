@@ -3,8 +3,6 @@
 pyinstaller --clean \
 	--noconfirm \
 	--onefile \
-	--hidden-import='pyvisa-py' \
-	--hidden-import='pkg_resources.py2_warn' \
+	--hidden-import='pyvisa_py' \
 	--add-data=template.ini:. \
-	--add-data=README.html:. \
 	e4990a.py
