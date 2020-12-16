@@ -34,3 +34,7 @@ jobs:
     - name: Create distributable
       run: |
         sh ./distribute.sh
+    - uses: actions/upload-artifact@v2
+      with:
+        name: e4990a-macos
+        path: dist/*
