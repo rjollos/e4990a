@@ -18,9 +18,13 @@
 * Fixed incorrect reporting of acquisition time.
 * Report acquisition time in ms rather than s.
 
-## 2.6 (Not Yet Released)
+## 2.6 (2020-12-16)
 * Install creates README.html from README.md.
 * Added MATLAB function for plotting impedance data.
 * Added install and execution scripts for OSX.
 * Fixed poor performance and timeout over TCP/IP.
 * Added build of executable using PyInstaller.
+* Upgraded dependencies and pinned install requirements.
+* Upgrade to Python 3.9
+* Added build of executables using GitHub Actions.
+* Added script for creating a release.
