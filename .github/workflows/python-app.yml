@@ -3,6 +3,8 @@ name: Build e4990a executables
 on:
   push:
     branches: [ main ]
+    tags:
+      - '*'
   pull_request:
     branches: [ main ]
 
