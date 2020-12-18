@@ -91,7 +91,7 @@ def acquire(filename, config_filename, fixture_compensation):
     try:
         inst = rm.open_resource(resource_name)
     except pyvisa.errors.VisaIOError as e:
-        raise E4990AError(f"{e}")
+        raise E4990AError(f"{e}") from e
     # Timeout must be longer than sweep interval.
     inst.timeout = 15000
     try:
@@ -410,7 +410,7 @@ def configure_sweep_parameters(inst, cfg):
         number_of_points = cfg.number_of_points
 
     inst.write(f':SENS1:AVER:COUN {cfg.number_of_point_averages}')
-    inst.write(f':SENS1:AVER:STAT ON')
+    inst.write(':SENS1:AVER:STAT ON')
     # Measurement speed: [1 5] (1: fastest, 5: most accurate)
     inst.write(f':SENS1:APER:TIME {cfg.measurement_speed}')
 
