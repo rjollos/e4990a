@@ -28,3 +28,7 @@
 * Upgrade to Python 3.9
 * Added build of executables using GitHub Actions.
 * Added script for creating a release.
+
+## 2.7 (2020-12-21)
+* Change to single-dir rather than single-file
+  package to avoid slow extraction time from file.

@@ -7,9 +7,17 @@ IF %ERRORLEVEL% NEQ 0 (
   set pyinstaller=pyinstaller.exe
 )
 echo %pyinstaller%
+set distname=win
 %pyinstaller% --clean ^
+	--distpath .\dist\%distname% ^
 	--noconfirm ^
-	--onefile ^
+	--onedir ^
 	--hidden-import="pyvisa_py" ^
 	--add-data="template.ini;." ^
 	e4990a.py
+
+set scriptname=dist\e4990a.bat
+(
+@echo @echo off
+@echo .\%distname%\e4990a\e4990a %%*
+)>%scriptname%

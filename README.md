@@ -2,7 +2,7 @@
 
 This is a python application for acquiring from the Keysight E4990A
 impedance analyzer. The script captures a frequency sweep from the
-E4990 and saves the data in a MAT file. The capture parameters are
+E4990A and saves the data in a MAT file. The capture parameters are
 configured in the `e4990a.ini` file. The USB or ethernet interface of
 the E4990A can be used.
 
@@ -10,14 +10,21 @@ The [PyVISA](https://pyvisa.readthedocs.io) library is used to communicate with 
 
 ## Execution
 
-The application is a single-file executable named `e4990a.exe` on Windows
-and `e4990a` on OSX / Linux. Run the application once to generate the
-default `e4990a.ini`. The INI file can then be edited or copied.
+The application entry point is named `e4990a.bat` on Windows and `e4990a`
+on macOS / Linux. On macOS / Linux the permissions of the script need to
+be changed after extracting the zip archive:
+```
+$ chmod 755 e4990a
+``` 
+
+Run the application once to generate the default `e4990a.ini`.
+The INI file can then be edited or copied. Replace `./e4990a` with
+`e4990a.bat` when running on Windows.
 
 1. Set the capture parameters in `e4990a.ini`.
 1. Execute the fixture compensation procedure.
 
-        > e4990a.exe -c
+        $ ./e4990a -c
         Opening resource: TCPIP::192.168.11.227::INSTR
         Starting fixture compensation procedure
         Put the test fixture's device contacts in the OPEN state and press [ENTER]
@@ -25,7 +32,7 @@ default `e4990a.ini`. The INI file can then be edited or copied.
 
 1. Execute the script and accept the default filename for storing the data, or specify the filename. The `.mat` extension will be appended if not provided.
 
-        > e4990a.exe
+        $ ./e4990a
         Enter a filepath or press [ENTER] to accept the default (20181020T182322.mat):
 The filename can be a relative or absolute path.
 
@@ -43,17 +50,17 @@ IP address through the router to persist the configuration.
 
 View the configuration parameters:
 ```
-> e4990a.exe -h
+$ ./e4990a -h
 ```
 
 The configuration file can be specified using the `--config` parameter:
 ```
-> e4990a.exe --config=e4990a-2.ini
+$ ./e4990a --config=e4990a-2.ini
 ```
 
 Data files can be output to a specified directory using a specified prefix:
 ```
-> e4990a.exe 20190705/DeviceA7
+$ ./e4990a 20190705/DeviceA7
 ```
 * The directory will be created if it does not exist.
 * The forward slash must be used as the path separator, even on Windows.
@@ -61,14 +68,14 @@ Data files can be output to a specified directory using a specified prefix:
 
 A timestamp can be appended to the given filename using the `-a` parameter:
 ```
-> e4990a.exe -a 20190705/DeviceA7
+$ ./e4990a -a 20190705/DeviceA7
 ...
 Data saved to "20190705\DeviceA7-20190705T213856.mat"
 ```
 
 The default filename can be specified to avoid being prompted:
 ```
-> e4990a.exe -d
+$ ./e4990a -d
 ```
 The default filename is an ISO9601 datetime stamp.
 
@@ -118,7 +125,7 @@ The configuration of `pylint` is in `.pylintrc`.
 
 ## Tested With
 
-* Windows 10 and OSX 10.15
+* Windows 10 and macOS 10.15
 * Python 3.9 x86-64
 
 ## Dependencies
