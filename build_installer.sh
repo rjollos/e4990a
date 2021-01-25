@@ -12,6 +12,8 @@ pyinstaller --clean \
 SCRIPTPATH=dist/e4990a
 cat > $SCRIPTPATH <<EOF
 #!/usr/bin/env sh
-./$DISTNAME/e4990a/e4990a "\$1"
+EXEPATH=$DISTNAME/e4990a/e4990a
+chmod 755 "\$EXEPATH"
+"./\$EXEPATH" "\$1"
 EOF
 chmod 755 $SCRIPTPATH
