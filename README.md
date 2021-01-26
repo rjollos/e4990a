@@ -134,7 +134,7 @@ The configuration of `pylint` is in `.pylintrc`.
 ## Tested With
 
 * Windows 10 and macOS 10.15
-* Python 3.9 x86-64
+* Python 3.9.1 x86-64
 
 ## Dependencies
 * [PyVISA-py](https://pypi.org/project/PyVISA-py)
