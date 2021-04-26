@@ -17,14 +17,6 @@ be changed after extracting the zip archive:
 $ chmod 755 e4990a
 ```
 
-On macOS, the quarantine flag
-([Gatekeeper](https://en.wikipedia.org/wiki/Gatekeeper_(macOS)))
-will need to be cleared if the archive was downloaded through the
-web browser:
-```
-$ sudo xattr -r -d com.apple.quarantine .
-```
-
 Run the application once to generate the default `e4990a.ini`.
 The INI file can then be edited or copied. Replace `./e4990a` with
 `e4990a.bat` when running on Windows.

@@ -32,5 +32,5 @@
 ## 2.7 (To be released)
 * Change to single-dir rather than single-file
   package to avoid slow extraction time from file.
-* Document clearing quarantine flag on macOS.
+* Implictly clear quarantine attribute on macOS.
 * Upgrade to Python 3.9.1
