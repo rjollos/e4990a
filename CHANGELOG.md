@@ -33,4 +33,4 @@
 * Change to single-dir rather than single-file
   package to avoid slow extraction time from file.
 * Implictly clear quarantine attribute on macOS.
-* Upgrade to Python 3.9.4
+* Upgrade to Python 3.9.5
