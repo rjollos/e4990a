@@ -29,7 +29,7 @@
 * Added build of executables using GitHub Actions.
 * Added script for creating a release.
 
-## 2.7 (To be released)
+## 2.7 (2021-10-19)
 * Change to single-dir rather than single-file
   package to avoid slow extraction time from file.
 * Implictly clear quarantine attribute on macOS.
