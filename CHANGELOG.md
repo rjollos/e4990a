@@ -33,4 +33,8 @@
 * Change to single-dir rather than single-file
   package to avoid slow extraction time from file.
 * Implictly clear quarantine attribute on macOS.
-* Upgrade to Python 3.9.5
+* Upgrade to Python 3.9.7
+* Check for brew dependencies in install script
+  and error if missing, rather than implicitly
+  installing.
+* Upgrade dependencies to the latest versions.

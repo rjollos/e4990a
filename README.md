@@ -111,11 +111,11 @@ The MATLAB function `plot_impedance.m` plots the impedance data.
 
 ## Development
 
-1. (Windows only) Install [Python](https://www.python.org/downloads/windows/) to `C:\Python38`.
+1. (Windows only) Install [Python](https://www.python.org/downloads/windows/) to `C:\Python39`.
 1. Clone this repository.
-1. Run the `install` script (`install.bat` on Windows, `install.sh` on Unix).
+1. Run the `install` script (`install.bat` on Windows, `install.sh` on macOS).
 1. Run the `build_installer` script (`build_installer.bat` on Windows,
-   `build_installer.sh` on Unix).
+   `build_installer.sh` on macOS).
 
 After making code changes, run `pylint` and fix errors/warnings before commit:
 ```
@@ -126,7 +126,7 @@ The configuration of `pylint` is in `.pylintrc`.
 ## Tested With
 
 * Windows 10 and macOS 10.15
-* Python 3.9.5 x86-64
+* Python 3.9.7 x86-64
 
 ## Dependencies
 * [PyVISA-py](https://pypi.org/project/PyVISA-py)

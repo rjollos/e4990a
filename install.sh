@@ -3,17 +3,23 @@
 PYVER=3.9.7
 VIRTUALENV=e4990a
 
-brew install pyenv pyenv-virtualenv tcl-tk 2>/dev/null
-
-# The Python version installed in pyenv must be built with tcl-tk
-# support for MatPlotLib and shared lib support PyInstaller.
-PYTHON_CONFIGURE_OPTS="\
---with-tcltk-includes='-I$(brew --prefix tcl-tk)/include' \
---with-tcltk-libs='-L$(brew --prefix tcl-tk)/lib -ltcl8.6 -ltk8.6' \
---enable-shared"
+if ! command -v brew &> /dev/null
+then
+  echo "Please install Homebrew: https://brew.sh"
+  exit 1
+fi
+if ! brew list pyenv &> /dev/null ||
+   ! brew list pyenv-virtualenv &> /dev/null
+then
+  echo "Please install pyenv and pyenv-virtualenv using Homebrew:"
+  echo "$ brew install pyenv pyenv-virtualenv"
+  exit 1
+fi
+# The Python version installed in pyenv must be built with
+# shared lib support PyInstaller.
+PYTHON_CONFIGURE_OPTS="--enable-shared"
 
 if [ -z $(pyenv versions --bare | grep "^$PYVER$") ]; then
-  echo $PYTHON_CONFIGURE_OPTS
   env PYTHON_CONFIGURE_OPTS="$PYTHON_CONFIGURE_OPTS" pyenv install $PYVER
 fi
 if [ -z $(pyenv versions --bare | grep "^$VIRTUALENV$") ]; then
