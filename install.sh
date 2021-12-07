@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-PYVER=3.9.7
+PYVER=3.9.9
 VIRTUALENV=e4990a
 
 if ! command -v brew &> /dev/null

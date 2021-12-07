@@ -38,3 +38,6 @@
   and error if missing, rather than implicitly
   installing.
 * Upgrade dependencies to the latest versions.
+
+## 2.8 (Not yet released)
+* Upgrade to Python 3.9.9
