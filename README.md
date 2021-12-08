@@ -133,6 +133,7 @@ The configuration of `pylint` is in `.pylintrc`.
 * [PyVISA](https://pypi.org/project/PyVISA)
 * [matplotlib](https://pypi.org/project/matplotlib)
 * [scipy](https://pypi.org/project/scipy)
+* [numpy](https://pypi.org/project/numpy)
 * [Markdown](https://pypi.org/project/Markdown)
 * [pyinstaller](https://pypi.org/project/pyinstaller)
 
