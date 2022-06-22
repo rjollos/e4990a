@@ -1,6 +1,6 @@
 PyVISA-py==0.5.2
 PyVISA==1.11.3
-numpy==1.21.4
+numpy==1.22.0
 matplotlib==3.5.0
 scipy==1.7.3
 markdown==3.3.6
